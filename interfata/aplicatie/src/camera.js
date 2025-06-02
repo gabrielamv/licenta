@@ -18,6 +18,7 @@ export default function CameraApp() {
 
 
   if(splashscreen){
+
     useEffect(() => {
       const timer = setTimeout(() => {
         setSplashscreen(false);
@@ -30,6 +31,7 @@ export default function CameraApp() {
         <Image source = {require('../assets/splash.png')} style={styles.logo}/>
       </View>
     );
+
   };
 
 
@@ -56,6 +58,7 @@ export default function CameraApp() {
   function toggleCameraType() {
     setCameraType((prevType) => (prevType === 'back' ? 'front' : 'back'));
   };
+  
   async function takePicture(){
     if (cameraRef.current) {
         const photo = await cameraRef.current.takePictureAsync();
@@ -76,10 +79,11 @@ export default function CameraApp() {
           });
 
           // trimite imaginea la server
-          console.log("trimitem")
+          console.log("trimitem imaginea");
           // const response = await fetch('http://192.168.0.107/upload/', {
           //const response = await fetch('http://192.168.1.191/upload/', {
-            const response = await fetch('http://192.168.0.100:8080/upload/', {
+          //const response = await fetch('http://192.168.0.100:8080/upload/', {
+          const response = await fetch('http://172.20.0.9:8080/upload/', {
               method: 'POST',
               body: form,
           });
@@ -89,7 +93,7 @@ export default function CameraApp() {
             Alert.alert("Eroare", "Eroare la trimiterea la server");
           }
           
-          console.log("am primit")
+          console.log("am primit poza")
           //obține rezultatul răspunsului
           const result = await response.json();
           console.log('Server response: ', Object.keys(result)); //verifica raspunsul de la server, 28 mai 
@@ -101,6 +105,9 @@ export default function CameraApp() {
             r.mesaj = result.mesaj;
             r.imagine = result.imagine;
             r.imagine = "data:image/jpg;base64,"+result.imagine;
+
+            //merg la pagina de restaurare
+            navigation.navigate('Result', {serverImage: restoredImageUri});
           }
           console.log(r.imagine.substring(0, 100))
           
@@ -121,11 +128,6 @@ export default function CameraApp() {
         {/*
         <Button title="Take picture" onPress={takePicture} />
         <Button title="Toggle Camera" onPress={toggleCameraType} /> */}
-
-        {/* cod buton X */}
-        <TouchableOpacity onPress={() => setPhotoUri(null)} style={styles.cancelButton}>
-          <Ionicons name = "close" size={30} color="white" />
-        </TouchableOpacity>
       </CameraView>
 
       {/*afisarea imaginii capturate*/}
@@ -150,6 +152,7 @@ export default function CameraApp() {
 }
 
 const styles = StyleSheet.create({
+
   cameraContentOut: {
     position: 'absolute',
     bottom: 40,
@@ -192,16 +195,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 300,
     borderRadius: 8,
-  },
-
-  //buton x
-
-  cancelButton: {
-    position: 'absolute',
-    top: 20,
-    left: 10,
-    backgroundColor: 'transparent',
-    padding: 10,
   },
 
   //afisare imagine raspuns server

@@ -1,5 +1,6 @@
 import CameraApp from './src/camera';
 import Preview from './src/preview';
+import Result from './src/result';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -10,8 +11,25 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRoutName='Camera'>
-        <Stack.Screen name="Camera" component={CameraApp}/>
-        <Stack.Screen name="Preview" component={Preview}/>
+
+        <Stack.Screen
+          name="Camera"
+          component={CameraApp}
+          options={{headerShown: false}}
+          />
+
+        <Stack.Screen 
+          name="Preview" 
+          component={Preview}
+          options={{headerShown: false}}
+          />
+
+          <Stack.Screen
+            name="Result"
+            component={Result}
+            options = {{headerShown: false}}
+          />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
