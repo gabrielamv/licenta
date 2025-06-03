@@ -23,12 +23,11 @@ def index(request: WSGIRequest):
 def upload_image(request: WSGIRequest):
     if request.method == 'POST':
         print (request.FILES)
+        print(request.POST.get('selectedModel'))
         image = request.FILES.get('image')
         if image:
             img = UploadedImage(image=image) #creezi obiectul din models pentru salvare in db
             img.save() #salvezi in db
-            print("salvat in db")
-
             img_bytes = image.read()
             from PIL import Image
             import io
