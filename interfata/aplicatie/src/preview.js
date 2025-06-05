@@ -11,10 +11,13 @@ import {
   FlatList,
   Animated,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 const aiModels = ["Model 1", "Model 2", "Model 3", "Model 4"];
 
@@ -24,6 +27,7 @@ const Preview = ({ route }) => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownHeight = useState(new Animated.Value(0))[0];
+  const [isLoading, setIsLoading] = useState(false);
 
   //cod pentru DropDown
   const toggleDropdown = () => {
@@ -76,6 +80,19 @@ const Preview = ({ route }) => {
     }
   }
 
+  async function compress_image(uri) {
+    return uri
+    const compressedImage = await ImageManipulator.manipulateAsync(
+        uri,
+        [],
+        {
+            compress: 0.6, 
+            format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+      return compressedImage.uri;
+    }
+  
   async function sendImage() {
     console.log("🟢 Butonul a fost apăsat");
 
@@ -95,13 +112,16 @@ const Preview = ({ route }) => {
     }
 
     try {
+      console.log("Comprimam imaginea")
+      const compressedImage = await compress_image(photoUri);
+        // const compressedImage = photoUri;
       console.log("🛠 Începem salvarea în MediaLibrary...");
-      await saveToGalery(photoUri);
+      await saveToGalery(compressedImage);
       console.log("💾 Imagine salvată în galerie");
 
       const form = new FormData();
       form.append("image", {
-        uri: photoUri,
+        uri: compressedImage,
         name: "photo.jpg",
         type: "image/jpeg",
       });
@@ -109,7 +129,7 @@ const Preview = ({ route }) => {
 
       console.log("📦 FormData pregătit pentru upload");
       console.log("📡 Trimit request spre server...");
-
+      setIsLoading(true);
       const response = await fetch("http://192.168.0.100/upload/", {
         method: "POST",
         body: form,
@@ -131,20 +151,21 @@ const Preview = ({ route }) => {
         Alert.alert("Eroare server", result.eroare);
       } else {
         console.log("🧭 Navighez către Result cu imaginea restaurată");
-        console.log(
-          "🔗 Imagine restaurată:",
-          result.imagine.substring(0, 50) + "..."
-        );
+
         const restoredUri = `${FileSystem.cacheDirectory}result.jpg`;
         await FileSystem.writeAsStringAsync(restoredUri, result.imagine, {
           encoding: FileSystem.EncodingType.Base64,
         });
+        console.log("🖼 Imagine restaurată salvată local:", restoredUri);
         await saveToGalery(restoredUri);
+
+        setIsLoading(false);
         navigation.navigate("Result", { restoredImage: restoredUri });
       }
     } catch (error) {
       console.error("🔥 Eroare în sendImage:", error);
       Alert.alert("Eroare", "A apărut o problemă la trimiterea imaginii.");
+      setIsLoading(false);
     }
   }
 
@@ -158,7 +179,12 @@ const Preview = ({ route }) => {
 
       <Text style={styles.text}>Preview:</Text>
       <Image source={{ uri: photoUri }} style={styles.image} />
-
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#00BFFF" />
+            <Text style={styles.loadingText}>Se procesează imaginea...</Text>
+        </View>
+        )}
       <View style={styles.dropdownToggleContainer}>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
@@ -309,6 +335,24 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
   },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 20,
+  },
+  
+  loadingText: {
+    color: "white",
+    marginTop: 10,
+    fontSize: 16,
+  },
+  
 });
 
 export default Preview;
