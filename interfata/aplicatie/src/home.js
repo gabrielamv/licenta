@@ -5,10 +5,16 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Dimensions,
+  SafeAreaView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 export default function Home() {
+
 
   return (
     <View style={styles.container}>
@@ -40,16 +46,33 @@ export default function Home() {
           source={require("../assets/home.jpeg")}
           style={styles.image}
         />
-        <View style={styles.overlay}>
+
+        <View style={styles.textBox}>
           <Text style={styles.text}>
             Cusătura păstrează {"\n"} povestea.{"\n"}
             <Text style={styles.italic}>Restaurarea</Text> {"\n"} o reînvie.
           </Text>
         </View>
       </View>
+
+      {/*cod butoane */}
+      <View style={styles.buttonContainer}>
+        <CustomButton icon = "camera-outline"  text="Restaurează"/>
+        <CustomButton icon = "photo-library" text = "Vezi restaurările tale"/>
+        <CustomButton icon = "search" text = "Descoperă simbolurile"/>
+      </View>
     </View>
   );
 }
+
+function CustomButton({ icon, text }) {
+    return (
+        <TouchableOpacity style = {styles.button}>
+            <Ionicons name = {icon} size = {28} color = {"#4c1f1f"} style = {{marginRight:8}}/>
+            <Text style = {styles.buttonText}>{text}</Text>
+        </TouchableOpacity>
+    )
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -109,21 +132,40 @@ const styles = StyleSheet.create({
   },
 
   imageWrapper: {
-    margin: 16,
-    borderRadius: 12,
+    width:screenWidth,
+    height:screenHeight*0.5,
+    //width:"100%",
+    //margin: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
     overflow: "hidden",
+    //height:360,
   },
   image: {
+    //flex:1,
     width: "100%",
-    height: 480,
-    resizeMode: "cover",
+    height: "100%",
+    resizeMode: "contain",
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(245, 233, 214, 0.8)",
-    padding: 24,
-    justifyContent: "flex-start",
-  },
+
+//textbox pentru citatul de pe prima poza
+  textBox:{
+    position: "absolute",
+    top: 24,
+    left: 16,
+    right:16,
+    padding: 16,
+    backgroundColor: "rgba(255, 233, 214, 0.85)",
+    borderRadius:8,
+  }, 
+
+  //overlay: {
+    //...StyleSheet.absoluteFillObject,
+    //backgroundColor: "rgba(245, 233, 214, 0.8)",
+    //padding: 24,
+    //justifyContent: "flex-start",
+  //},
   text: {
     color: "#4c1f1f",
     fontSize: 16,
@@ -131,5 +173,32 @@ const styles = StyleSheet.create({
   },
   italic: {
     fontStyle: "italic",
+  },
+
+  buttonContainer:{
+    width: "100%",
+    alignItems: 'center',
+    marginTop: 11,
+  },
+
+  button: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderColor: '#4c1f1f',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginVertical: 8,
+    alignItems: 'center',
+    width: Math.min(screenWidth*0.68, 300), //"68%",
+  },
+
+  buttonText: {
+    fontSize: 16,
+    color: '#4c1f1f',
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontWeight: '500',
   },
 });
