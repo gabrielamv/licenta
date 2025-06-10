@@ -9,8 +9,6 @@ import {
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
-import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 
 export default function CameraApp() {
@@ -18,7 +16,6 @@ export default function CameraApp() {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
     MediaLibrary.usePermissions();
-  const [splashscreen, setSplashscreen] = useState(true);
   const cameraRef = useRef(null);
   const navigation = useNavigation();
 
@@ -34,22 +31,6 @@ export default function CameraApp() {
     }
   }
 
-  useEffect(() => {
-    if (splashscreen) {
-      const timer = setTimeout(() => {
-        setSplashscreen(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [splashscreen]);
-
-  if (splashscreen) {
-    return (
-      <View style={styles.splashContainer}>
-        <Image source={require("../assets/final.png")} style={styles.logo} />
-      </View>
-    );
-  }
 
   if (!cameraPermission?.granted || !mediaPermission?.granted) {
     return (
@@ -79,7 +60,9 @@ export default function CameraApp() {
     <View style={{ flex: 1 }}>
       <CameraView style={{ flex: 1 }} facing={cameraType} ref={cameraRef}>
         <TouchableOpacity onPress={takePicture} style={styles.cameraContentOut}>
-          <View style={styles.cameraContentIn} />
+          <View style={styles.cameraContentIn}>
+            <Image source={require("../assets/logo_home.png")} style={styles.cameraLogo} />
+          </View>
         </TouchableOpacity>
       </CameraView>
     </View>
@@ -94,18 +77,22 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 40,
-    backgroundColor: "black",
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 7,
-    borderColor: "white",
+    borderWidth: 1.8,
+    borderColor: "#4c1f1f",
   },
 
   cameraContentIn: {
-    width: 50,
-    height: 50,
-    borderRadius: 30,
-    backgroundColor: "white",
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#f5e9d6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "#4c1f1f",
+    borderWidth: 1,
   },
 
   message: {
@@ -115,13 +102,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  splashContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-
   permissionsContainer: {
     flex: 1,
     justifyContent: "center",
@@ -129,9 +109,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  logo: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  cameraLogo: {
+    width:60,
+    height: 60,
+    resizeMode: "contain",
   },
+
 });

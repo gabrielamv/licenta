@@ -9,17 +9,23 @@ import {
   StatusBar,
   Platform,
   FlatList,
+  ScrollView,
   Animated,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from 'expo-image-manipulator';
+import DropDownPicker from 'react-native-dropdown-picker';
 
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
+const aspectRatio = screenHeight / screenWidth;
 
-const aiModels = ["Model 1", "Model 2", "Model 3", "Model 4"];
 
 const Preview = ({ route }) => {
   const { photoUri } = route.params;
@@ -29,23 +35,32 @@ const Preview = ({ route }) => {
   const dropdownHeight = useState(new Animated.Value(0))[0];
   const [isLoading, setIsLoading] = useState(false);
 
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+  { label: 'Model 1', value: 'Model 1' },
+  { label: 'Model 2', value: 'Model 2' },
+  { label: 'Model 3', value: 'Model 3' },
+  { label: 'Model 4', value: 'Model 4' },
+]);
+
   //cod pentru DropDown
-  const toggleDropdown = () => {
-    if (showDropdown) {
-      Animated.timing(dropdownHeight, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: false,
-      }).start(() => setShowDropdown(false));
-    } else {
-      setShowDropdown(true);
-      Animated.timing(dropdownHeight, {
-        toValue: 60,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
-  };
+  // const toggleDropdown = () => {
+  //   if (showDropdown) {
+  //     Animated.timing(dropdownHeight, {
+  //       toValue: 0,
+  //       duration: 300,
+  //       useNativeDriver: false,
+  //     }).start(() => setShowDropdown(false));
+  //   } else {
+  //     setShowDropdown(true);
+  //     Animated.timing(dropdownHeight, {
+  //       toValue: 60,
+  //       duration: 300,
+  //       useNativeDriver: false,
+  //     }).start();
+  //   }
+  // };
 
   //----------------------------
 
@@ -94,19 +109,19 @@ const Preview = ({ route }) => {
     }
   
   async function sendImage() {
-    console.log("🟢 Butonul a fost apăsat");
+    console.log("Butonul a fost apăsat");
 
     if (!selectedModel) {
-      console.log("❌ Niciun model AI selectat");
+      console.log("Niciun model AI selectat");
       Alert.alert("Selectează un model AI înainte de a continua.");
       return;
     }
 
-    console.log("📷 Imagine capturată:", photoUri);
+    console.log("Imagine capturată:", photoUri);
 
     const permission = await MediaLibrary.requestPermissionsAsync();
     if (!permission.granted) {
-      console.log("❌ Permisiunea pentru MediaLibrary nu a fost acordată");
+      console.log("Permisiunea pentru MediaLibrary nu a fost acordată");
       Alert.alert("Permisiunea pentru MediaLibrary este necesară.");
       return;
     }
@@ -115,9 +130,9 @@ const Preview = ({ route }) => {
       console.log("Comprimam imaginea")
       const compressedImage = await compress_image(photoUri);
         // const compressedImage = photoUri;
-      console.log("🛠 Începem salvarea în MediaLibrary...");
+      console.log("Începem salvarea în MediaLibrary...");
       await saveToGalery(compressedImage);
-      console.log("💾 Imagine salvată în galerie");
+      console.log("Imagine salvată în galerie");
 
       const form = new FormData();
       form.append("image", {
@@ -127,19 +142,19 @@ const Preview = ({ route }) => {
       });
       form.append("selectedModel", selectedModel);
 
-      console.log("📦 FormData pregătit pentru upload");
-      console.log("📡 Trimit request spre server...");
+      console.log("FormData pregătit pentru upload");
+      console.log("Trimit request spre server...");
       setIsLoading(true);
-      const response = await fetch("http://192.168.0.100/upload/", {
+      const response = await fetch("http://192.168.1.191/upload/", {
         method: "POST",
         body: form,
       });
 
-      console.log("📥 Serverul a răspuns");
-      console.log("🔍 Status response:", response.status);
+      console.log("Serverul a răspuns");
+      console.log("Status response:", response.status);
 
       if (!response.ok) {
-        console.log("❌ Răspunsul nu este OK");
+        console.log("Răspunsul nu este OK");
         Alert.alert("Eroare", "Eroare la trimiterea la server");
         return;
       }
@@ -147,23 +162,23 @@ const Preview = ({ route }) => {
       const result = await response.json();
 
       if ("eroare" in result) {
-        console.log("❗ Serverul a trimis o eroare:", result.eroare);
+        console.log("Serverul a trimis o eroare:", result.eroare);
         Alert.alert("Eroare server", result.eroare);
       } else {
-        console.log("🧭 Navighez către Result cu imaginea restaurată");
+        console.log("Navighez către Result cu imaginea restaurată");
 
         const restoredUri = `${FileSystem.cacheDirectory}result.jpg`;
         await FileSystem.writeAsStringAsync(restoredUri, result.imagine, {
           encoding: FileSystem.EncodingType.Base64,
         });
-        console.log("🖼 Imagine restaurată salvată local:", restoredUri);
+        console.log("Imagine restaurată salvată local:", restoredUri);
         await saveToGalery(restoredUri);
 
         setIsLoading(false);
         navigation.navigate("Result", { restoredImage: restoredUri });
       }
     } catch (error) {
-      console.error("🔥 Eroare în sendImage:", error);
+      console.error("Eroare în sendImage:", error);
       Alert.alert("Eroare", "A apărut o problemă la trimiterea imaginii.");
       setIsLoading(false);
     }
@@ -174,7 +189,7 @@ const Preview = ({ route }) => {
       <StatusBar hidden={true} />
 
       <TouchableOpacity onPress={handleBack} style={styles.cancelButton}>
-        <Ionicons name="close" size={30} color="white" />
+        <Ionicons name="close" size={30} color="#f5e9d6" />
       </TouchableOpacity>
 
       <Text style={styles.text}>Preview:</Text>
@@ -185,7 +200,7 @@ const Preview = ({ route }) => {
             <Text style={styles.loadingText}>Se procesează imaginea...</Text>
         </View>
         )}
-      <View style={styles.dropdownToggleContainer}>
+      {/* <View style={styles.dropdownToggleContainer}>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
             onPress={toggleDropdown}
@@ -203,34 +218,92 @@ const Preview = ({ route }) => {
 
           {/* Buton dreapta ecran */}
 
-          <TouchableOpacity style={styles.applyButton} onPress={sendImage}>
+          {/* <TouchableOpacity style={styles.applyButton} onPress={sendImage}>
             <Ionicons name="checkmark-circle" size={24} color="white" />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/*---------------------------------- */}
 
         {/*Drop-down*/}
-        <Animated.View
+        {/* <Animated.View
           style={[styles.dropdownListContainer, { height: dropdownHeight }]}
         >
           {showDropdown && (
-            <FlatList
-              data={aiModels}
-              renderItem={renderModelItem}
-              keyExtractor={(item) => item}
+            <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.modelList}
-            />
+            >
+            {aiModels.map((item) => (
+              <TouchableOpacity
+                key={item}
+                style={[
+                  styles.modelItem,
+                  selectedModel === item && styles.selectedModelItem,
+                ]}
+                onPress={() => handleModelSelect(item)}
+              >
+                <Text 
+                  style={styles.modelText}>{item}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            </ScrollView>
           )}
         </Animated.View>
-      </View>
+      </View> */} 
+
+      <View style={styles.dropdownWrapper}>
+        <DropDownPicker
+          open={open}
+          value={value}
+          items={items}
+          setOpen={setOpen}
+          setValue={(callback) => {
+          const selected = callback(value);
+          setValue(selected);
+          setSelectedModel(selected); // conectezi cu restul codului tău
+        }}
+        setItems={setItems}
+        placeholder="Alege modelul AI"
+        style={{ backgroundColor: '#f5e9d6', borderColor: '#4c1f1f' }}
+        dropDownContainerStyle={{ backgroundColor: '#f5e9d6' }}
+        labelStyle={{ color: '#4c1f1f', fontSize: 16, fontWeight: '500' }}
+        placeholderStyle={{ color: '#4c1f1f' }}
+      />
+  </View>
+
+  <Pressable
+        onPress={sendImage}
+        style = {({ pressed }) => [
+          styles.sendButton,
+          pressed && { backgroundColor: "#e6c7aa" }
+        ]}
+        >
+        <Ionicons name="send" size={22} color="#4c1f1f"/>
+        <Text style={styles.sendButtonText}>Trimite</Text>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  dropdownWrapper: {
+    position: "absolute",
+    top: aspectRatio > 1.8 ? 25 : 60, // ajustare pentru aspect ratio
+    right: 10,
+    zIndex: 1000,
+    width: 160,
+
+  },
+
+  dropdown:{
+    backgroundColor:"#f5e9d6",
+    borderColor: "#4c1f1f",
+    height: 40,
+  },
+
   cancelButton: {
     position: "absolute",
     top: 0,
@@ -277,7 +350,7 @@ const styles = StyleSheet.create({
   },
 
   dropdownToggleButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "#4c1f1f",
     //padding: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -289,13 +362,17 @@ const styles = StyleSheet.create({
   },
 
   dropdownToggleText: {
-    color: "white",
-    fontSize: 16,
+    color: "#4c1f1f",
+    fontSize: 18,
+    backgroundColor:"#f5e9d6",
+    fontFamily: "Lato_400Regular",
   },
 
   dropdownListContainer: {
     overflow: "hidden",
     marginTop: 5,
+  
+  
   },
 
   applyButton: {
@@ -304,37 +381,32 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
 
-  /*
-    modelListContainer: {
-        position: 'absolute',
-        bottom: 30,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 10,
-        zIndex: 10,
-        elevation: 10,
-    }, */
-
   modelList: {
     paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   modelItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "#f5e9d6",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
     marginHorizontal: 5,
+    
   },
 
   selectedModelItem: {
-    backgroundColor: "rgba(0, 150, 255, 0.6)",
+    backgroundColor: "#f5e9d6",
   },
 
   modelText: {
-    color: "white",
-    fontSize: 14,
+    color: "#4c1f1f",
+    fontSize: 16,
+    fontFamily: "Lato_400Regular",
+    fontWeight: "500",
   },
+
   loadingOverlay: {
     position: "absolute",
     top: 0,
@@ -352,6 +424,32 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
+
+  sendButton: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    marginTop: 10,
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5e9d6",
+    borderColor: "#4c1f1f",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    zIndex: 999,
+
+  },
+
+  sendButtonText:{
+    color: "#5a2a2a",
+    fontsize: 16,
+    marginLeft: 8,
+    fontWeight: "500",
+    fontFamily: "Lato_400Regular",
+  }
   
 });
 

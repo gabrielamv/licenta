@@ -5,12 +5,12 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  Platform,
   Dimensions,
+  Pressable
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-
+import { ImageDown } from "lucide-react-native";
 import Animated, {
     useAnimatedGestureHandler,
     useAnimatedStyle,
@@ -21,7 +21,13 @@ import Animated, {
     clamp,
 } from "react-native-reanimated";
 import { PinchGestureHandler, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
+const aspectRatio = screenHeight / screenWidth;
 
 
 const Result = () => {
@@ -94,6 +100,26 @@ const Result = () => {
     };
   });
 
+  //salvare optionala a pozei restaurate in  galerie 
+
+  const saveToGallery = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("restaurari");
+      const array = stored ? JSON.parse(stored) : [];
+      if (!array.includes(restoredImage)) {
+        array.push(restoredImage);
+        await AsyncStorage.setItem("restaurari", JSON.stringify(array));
+        alert("Imagine salvată în galerie!");
+      } else {
+        alert("Această imagine este deja salvată.");
+      }
+    } catch (e) {
+      console.log("Eroare la salvare:", e);
+    }
+
+  };
+  
+
   return (
     
     <View style={styles.container}>
@@ -117,6 +143,17 @@ const Result = () => {
           </Animated.View>
         </PanGestureHandler>
       </GestureHandlerRootView>
+
+      {/*Buton de salvare a pozei */}  
+      <Pressable 
+        onPress = {saveToGallery}
+        style={({ pressed }) => [
+        styles.saveButton,
+        pressed && { backgroundColor: "#e6c7aa" }
+      ]}>
+        <ImageDown size={20} color="#4c1f1f" style={{ marginRight: 8 }} />
+        <Text style={styles.saveButtonText}>Salvează</Text>
+        </Pressable>
     </View>
   );
 };
@@ -150,6 +187,30 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 10,
   },
+
+  saveButton:{
+    position: "absolute",
+    flexDirection: "row",
+    bottom: 30,
+    alignSelf: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5e9d6",
+    borderColor: "#4c1f1f",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginVertical: aspectRatio > 1.8 ? 12 : 8,
+    alignItems: "center",
+    //width: Math.min(screenWidth * 0.68, 300),
+  },
+
+  saveButtonText:{
+    fontSize: 18,
+    color: "#4c1f1f",
+    fontFamily: "Lato_400Regular",
+    fontWeight: "500",
+  }
 });
 
 export default Result;

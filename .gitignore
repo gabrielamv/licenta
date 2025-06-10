@@ -39,8 +39,5 @@ yarn-error.*
 *.pyc
 __pycache__/
 
-*.jpg
-*.jpeg
-*.bmp
-*.png
+dataset/
 uploads/

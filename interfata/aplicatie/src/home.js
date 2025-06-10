@@ -1,50 +1,74 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  TouchableOpacity,
+  Pressable,
   Dimensions,
-  SafeAreaView,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import Carousel from "react-native-reanimated-carousel";
+import { Ionicons } from "@expo/vector-icons";
+//import { useNavigation } from "@react-navigation/native";
+
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
+const aspectRatio = screenHeight / screenWidth;
 
-export default function Home() {
 
+
+export default function Home({navigation}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const carouselRef = useRef(null);
+  const lastIndex = useRef(0);
+
+  const images = [
+    { image: require("../assets/home.jpg") },
+    { image: require("../assets/ie2.jpg") },
+    { image: require("../assets/ie4.jpg") },
+    { image: require("../assets/ie3.jpg") },
+  ];
 
   return (
     <View style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../assets/logo_home.png")}
-            style={styles.logo}
-          />
-        </View>
-
-        <View style={styles.titleWrapper}>
-            <Text style={styles.title}>Povești brodate</Text>
-        </View>
-
-        <TouchableOpacity>
-          <Ionicons name="menu" size={36} color="#4c1f1f" />
-        </TouchableOpacity>
-
+        <Image source={require("../assets/logo_home.png")} style={styles.logo} />
+        <Text style={styles.title}>Povești brodate</Text>
       </View>
 
-      <View style={styles.separator}/>
+      <View style={styles.separator} />
 
       {/* Main Content */}
       <View style={styles.imageWrapper}>
-        <Image
-          source={require("../assets/home.jpeg")}
-          style={styles.image}
+        <Carousel
+          ref={carouselRef}
+          width={screenWidth}
+          height={screenHeight * 0.5}
+          autoPlay
+          autoPlayInterval={10000}
+          loop
+          data={images}
+          scrollAnimationDuration={1000}
+          renderItem={({ item }) => (
+            <Image source={item.image} style={styles.carouselImage} />
+          )}
+          onProgressChange={(offsetProgress) => {
+            let index = Math.round(Math.abs(offsetProgress)/375);
+            // index = images.length - 1 - index;
+            
+            if(index > images.length -1)
+                index = 0;
+            if(index < 0)
+                index = images.length - 1;
+            if (index !== lastIndex.current) {
+                lastIndex.current = index;
+                setActiveIndex(index);
+            }
+            }}
+
         />
 
         <View style={styles.textBox}>
@@ -53,26 +77,44 @@ export default function Home() {
             <Text style={styles.italic}>Restaurarea</Text> {"\n"} o reînvie.
           </Text>
         </View>
+
+        {/* Buline de navigare */}
+        <View style={styles.dotsWrapper}>
+          {images.map((_, i) => (
+            <View
+                key={i}
+                style={[
+                    styles.dot,
+                    i === activeIndex && styles.activeDot
+                ]}
+                />
+          ))}
+        </View>
       </View>
 
-      {/*cod butoane */}
+      {/* Butoane */}
       <View style={styles.buttonContainer}>
-        <CustomButton icon = "camera-outline"  text="Restaurează"/>
-        <CustomButton icon = "photo-library" text = "Vezi restaurările tale"/>
-        <CustomButton icon = "search" text = "Descoperă simbolurile"/>
+        <CustomButton icon="camera-outline" text="Restaurează" onPress = { () => navigation.navigate("Camera")} />
+        <CustomButton icon="images-outline" text="Vezi restaurările tale" />
+        <CustomButton icon="search" text="Descoperă simbolurile" />
       </View>
     </View>
   );
 }
 
-function CustomButton({ icon, text }) {
-    return (
-        <TouchableOpacity style = {styles.button}>
-            <Ionicons name = {icon} size = {28} color = {"#4c1f1f"} style = {{marginRight:8}}/>
-            <Text style = {styles.buttonText}>{text}</Text>
-        </TouchableOpacity>
-    )
-};
+function CustomButton({ icon, text, onPress }) {
+  return (
+    <Pressable 
+    onPress = {onPress}
+    style={({ pressed }) => [
+      styles.button,
+      pressed && { backgroundColor: "#e6c7aa" }
+    ]}>
+      <Ionicons name={icon} size={28} color="#5a2a2a" style={{ marginRight: 8 }} />
+      <Text style={styles.buttonText}>{text}</Text>
+    </Pressable>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -81,124 +123,110 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 14,
-    //borderBottomWidth: 2,
-    //borderBottomColor: "#d8c7b0",
-    position: "relative",
-  },
-  logoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    marginTop: aspectRatio > 1.8 ? 25 : 10,
   },
   logo: {
     width: 36,
     height: 36,
     resizeMode: "contain",
-    marginRight: 8,
-    marginTop: 10, 
+    marginRight: 12,
+    marginTop: 10,
   },
-
-  titleWrapper: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-
   title: {
     fontFamily: "PlayfairDisplay_700Bold",
     fontSize: 28,
     fontWeight: "bold",
     color: "#4c1f1f",
-    //justifyContent: "center",
-    //alignItems: "center",
-    //left:0,
-    //right:0,
     textAlign: "center",
-    //position:'absolute',
-
   },
-
-  separator:{
+  separator: {
     alignSelf: "center",
     width: "90%",
-    borderBottomWidth:2,
+    borderBottomWidth: 2,
     borderBottomColor: "#d8c7b0",
-    marginBottom:12,
+    marginBottom: 12,
   },
-
   imageWrapper: {
-    width:screenWidth,
-    height:screenHeight*0.5,
-    //width:"100%",
-    //margin: 16,
+    width: screenWidth,
+    height: screenHeight * 0.5,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    //height:360,
+    position: "relative",
   },
-  image: {
-    //flex:1,
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
+  carouselImage: {
+    width: screenWidth,
+    height: screenHeight * 0.5,
+    resizeMode: "cover",
   },
-
-//textbox pentru citatul de pe prima poza
-  textBox:{
+  textBox: {
     position: "absolute",
-    top: 24,
-    left: 16,
-    right:16,
-    padding: 16,
-    backgroundColor: "rgba(255, 233, 214, 0.85)",
-    borderRadius:8,
-  }, 
-
-  //overlay: {
-    //...StyleSheet.absoluteFillObject,
-    //backgroundColor: "rgba(245, 233, 214, 0.8)",
-    //padding: 24,
-    //justifyContent: "flex-start",
-  //},
+    top: 16,
+    alignSelf: "center",
+    left: 60,
+    padding: 12,
+    backgroundColor: "rgba(245, 233, 214, 0.85)",
+    opacity: 0.8,
+    borderRadius: 8,
+    maxWidth: "80%",
+  },
   text: {
     color: "#4c1f1f",
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 24,
+    lineHeight: 28,
+    fontFamily: "CormorantGaramond_400Regular",
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowRadius: 2,
   },
   italic: {
     fontStyle: "italic",
+    fontFamily: "CormorantGaramond_700Bold",
   },
-
-  buttonContainer:{
+  dotsWrapper: {
+    position: "absolute",
+    bottom: 10,
+    flexDirection: "row",
+    alignSelf: "center",
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    margin: 5,
+    backgroundColor: "#d8c7b0",
+    opacity: 0.5,
+  },
+  activeDot: {
+    backgroundColor: "#4c1f1f",
+    opacity: 1,
+  },
+  buttonContainer: {
     width: "100%",
-    alignItems: 'center',
-    marginTop: 11,
+    alignItems: "center",
+    marginTop: aspectRatio > 1.8 ? 20 : 7,
   },
-
   button: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    borderColor: '#4c1f1f',
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    borderColor: "#4c1f1f",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    marginVertical: 8,
-    alignItems: 'center',
-    width: Math.min(screenWidth*0.68, 300), //"68%",
+    marginVertical: aspectRatio > 1.8 ? 12 : 8,
+    alignItems: "center",
+    width: Math.min(screenWidth * 0.68, 300),
   },
-
   buttonText: {
-    fontSize: 16,
-    color: '#4c1f1f',
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontWeight: '500',
+    fontSize: 18,
+    color: "#4c1f1f",
+    fontFamily: "Lato_400Regular",
+    fontWeight: "500",
   },
 });
