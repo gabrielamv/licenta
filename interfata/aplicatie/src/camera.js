@@ -10,6 +10,7 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function CameraApp() {
   const [cameraType, setCameraType] = useState("back");
@@ -18,6 +19,10 @@ export default function CameraApp() {
     MediaLibrary.usePermissions();
   const cameraRef = useRef(null);
   const navigation = useNavigation();
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
 
   async function requestPermissions() {
     console.log("cerem permisiuni");
@@ -65,6 +70,11 @@ export default function CameraApp() {
           </View>
         </TouchableOpacity>
       </CameraView>
+
+      <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={30} color="#f5e9d6" />
+      </TouchableOpacity>
+
     </View>
   );
 }
@@ -114,5 +124,14 @@ const styles = StyleSheet.create({
     height: 60,
     resizeMode: "contain",
   },
+
+  backButton: {
+    position: "absolute",
+    top: 5,
+    left: 10,
+    zIndex: 10,
+    padding: 10,
+  },
+
 
 });

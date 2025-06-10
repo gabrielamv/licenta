@@ -21,6 +21,10 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from 'expo-image-manipulator';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { Sparkles, WandSparkles } from "lucide-react-native";
+
+
+
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -145,7 +149,7 @@ const Preview = ({ route }) => {
       console.log("FormData pregătit pentru upload");
       console.log("Trimit request spre server...");
       setIsLoading(true);
-      const response = await fetch("http://192.168.1.191/upload/", {
+      const response = await fetch("http://192.168.0.100/upload/", {
         method: "POST",
         body: form,
       });
@@ -167,7 +171,9 @@ const Preview = ({ route }) => {
       } else {
         console.log("Navighez către Result cu imaginea restaurată");
 
-        const restoredUri = `${FileSystem.cacheDirectory}result.jpg`;
+        //const restoredUri = `${FileSystem.cacheDirectory}result.jpg`;
+        const restoredUri = `${FileSystem.cacheDirectory}result_${Date.now()}.jpg`;
+
         await FileSystem.writeAsStringAsync(restoredUri, result.imagine, {
           encoding: FileSystem.EncodingType.Base64,
         });
@@ -272,6 +278,7 @@ const Preview = ({ route }) => {
         labelStyle={{ color: '#4c1f1f', fontSize: 16, fontWeight: '500' }}
         placeholderStyle={{ color: '#4c1f1f' }}
       />
+
   </View>
 
   <Pressable
@@ -449,7 +456,20 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: "500",
     fontFamily: "Lato_400Regular",
-  }
+  },
+
+  sparkleButton: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    backgroundColor: "#f5e9d6",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#4c1f1f",
+  },
   
 });
 

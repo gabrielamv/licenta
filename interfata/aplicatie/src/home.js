@@ -95,8 +95,8 @@ export default function Home({navigation}) {
       {/* Butoane */}
       <View style={styles.buttonContainer}>
         <CustomButton icon="camera-outline" text="Restaurează" onPress = { () => navigation.navigate("Camera")} />
-        <CustomButton icon="images-outline" text="Vezi restaurările tale" />
-        <CustomButton icon="search" text="Descoperă simbolurile" />
+        <CustomButton icon="images-outline" text="Vezi restaurările tale" onPress = { () => navigation.navigate("Galerie")} />
+        <CustomButton icon="search" text="Descoperă simbolurile"  /> 
       </View>
     </View>
   );

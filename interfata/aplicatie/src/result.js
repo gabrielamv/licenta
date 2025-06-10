@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ImageDown } from "lucide-react-native";
+import { ImageDown, WandSparkles } from "lucide-react-native";
 import Animated, {
     useAnimatedGestureHandler,
     useAnimatedStyle,
@@ -22,6 +22,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { PinchGestureHandler, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as MediaLibrary from "expo-media-library";
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,7 +40,15 @@ const Result = () => {
   const handleBack = () => {
     navigation.goBack();
   };
-  console.log("Restored image URI:", restoredImage.substring(0, 50) + "...");
+
+  //console.log("Restored image URI:", restoredImage.substring(0, 50) + "...");
+  
+  if (typeof restoredImage === 'string') {
+    console.log("Restored image URI:", restoredImage.substring(0, 50) + "...");
+  } else {
+    console.warn("Restored image URI is not a string:", restoredImage);
+  }
+  
 
   const scale = useSharedValue(1);
 
@@ -105,16 +115,34 @@ const Result = () => {
   const saveToGallery = async () => {
     try {
       const stored = await AsyncStorage.getItem("restaurari");
-      const array = stored ? JSON.parse(stored) : [];
-      if (!array.includes(restoredImage)) {
-        array.push(restoredImage);
-        await AsyncStorage.setItem("restaurari", JSON.stringify(array));
-        alert("Imagine salvată în galerie!");
-      } else {
-        alert("Această imagine este deja salvată.");
+      let array = stored ? JSON.parse(stored) : [];
+      
+      const newEntry = {
+        uri: restoredImage,
+        savedAt: Date.now(),
       }
+
+      // if(!alreadyExists){
+      //   const newEntry={
+      //     uri: restoredImage,
+      //     savedAt: Date.now(),
+      //   }
+    //     array.push(restoredImage);
+    //     await AsyncStorage.setItem("restaurari", JSON.stringify(array));
+    //     alert("Imagine salvată în galerie!");
+    //   } else {
+    //     alert("Această imagine este deja salvată.");
+    //   }
+    // } catch (e) {
+    //   console.log("Eroare la salvare:", e);
+    //   alert("A apărut o eraore la salvarea imaginii.");
+    // }
+      array.push(newEntry);
+      await AsyncStorage.setItem("restaurari", JSON.stringify(array));
+      alert("Imagine salvată în galerie!");
     } catch (e) {
       console.log("Eroare la salvare:", e);
+      alert("A apărut o eroare la salvarea imaginii.");
     }
 
   };
@@ -124,7 +152,7 @@ const Result = () => {
     
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={30} color="white" />
+        <Ionicons name="arrow-back" size={30} color="#f5e9d6" />
       </TouchableOpacity>
 
         {/* <Image source={{ uri: restoredImage }} style={styles.image} /> */}
@@ -154,6 +182,15 @@ const Result = () => {
         <ImageDown size={20} color="#4c1f1f" style={{ marginRight: 8 }} />
         <Text style={styles.saveButtonText}>Salvează</Text>
         </Pressable>
+
+        <TouchableOpacity
+          onPress={() => {
+            //console.log("Ai apăsat pe buton!");
+          }}
+          style={styles.sparkleButton}
+        >
+          <WandSparkles size={20} color="#4c1f1f" style={{ marginLeft: 8 }} />
+        </TouchableOpacity>
     </View>
   );
 };
@@ -173,7 +210,8 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    flex: 1,
+    //flex: 1,
+    position: "absolute",
     width: "100%",
     height: "100%",
     //resizeMode: 'contain',
@@ -210,7 +248,24 @@ const styles = StyleSheet.create({
     color: "#4c1f1f",
     fontFamily: "Lato_400Regular",
     fontWeight: "500",
-  }
+  },
+
+  sparkleButton: {
+    //marginTop: 10,
+    position: "absolute",
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    backgroundColor: "#f5e9d6",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#4c1f1f",
+    top: 70,
+    right: 10,
+  },
 });
 
 export default Result;
