@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ImageDown, WandSparkles } from "lucide-react-native";
 import Animated, {
     useAnimatedGestureHandler,
     useAnimatedStyle,
@@ -22,7 +21,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { PinchGestureHandler, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as MediaLibrary from "expo-media-library";
+import { ImageDown } from 'lucide-react-native';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -37,12 +36,18 @@ const Result = () => {
   const route = useRoute();
   const { restoredImage } = route.params;
 
+  const imageUri =
+  typeof restoredImage === "string"
+    ? restoredImage
+    : restoredImage?.uri;
+
+
   const handleBack = () => {
     navigation.goBack();
   };
 
   //console.log("Restored image URI:", restoredImage.substring(0, 50) + "...");
-  
+
   if (typeof restoredImage === 'string') {
     console.log("Restored image URI:", restoredImage.substring(0, 50) + "...");
   } else {
@@ -152,7 +157,7 @@ const Result = () => {
     
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={30} color="#f5e9d6" />
+        <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
       </TouchableOpacity>
 
         {/* <Image source={{ uri: restoredImage }} style={styles.image} /> */}
@@ -182,15 +187,6 @@ const Result = () => {
         <ImageDown size={20} color="#4c1f1f" style={{ marginRight: 8 }} />
         <Text style={styles.saveButtonText}>Salvează</Text>
         </Pressable>
-
-        <TouchableOpacity
-          onPress={() => {
-            //console.log("Ai apăsat pe buton!");
-          }}
-          style={styles.sparkleButton}
-        >
-          <WandSparkles size={20} color="#4c1f1f" style={{ marginLeft: 8 }} />
-        </TouchableOpacity>
     </View>
   );
 };
@@ -220,7 +216,7 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: "absolute",
-    top: 5,
+    top: 15,
     left: 10,
     zIndex: 10,
     padding: 10,
@@ -234,7 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#f5e9d6",
     borderColor: "#4c1f1f",
-    borderWidth: 1,
+    borderWidth: 1.3,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -250,22 +246,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  sparkleButton: {
-    //marginTop: 10,
-    position: "absolute",
-    right: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-end",
-    backgroundColor: "#f5e9d6",
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#4c1f1f",
-    top: 70,
-    right: 10,
-  },
+
 });
 
 export default Result;

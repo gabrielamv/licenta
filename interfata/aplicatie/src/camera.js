@@ -6,11 +6,13 @@ import {
   Button,
   Image,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+
 
 export default function CameraApp() {
   const [cameraType, setCameraType] = useState("back");
@@ -19,6 +21,7 @@ export default function CameraApp() {
     MediaLibrary.usePermissions();
   const cameraRef = useRef(null);
   const navigation = useNavigation();
+
 
   const handleBack = () => {
     navigation.goBack();
@@ -72,9 +75,8 @@ export default function CameraApp() {
       </CameraView>
 
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={30} color="#f5e9d6" />
+        <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
       </TouchableOpacity>
-
     </View>
   );
 }
@@ -127,10 +129,11 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: "absolute",
-    top: 5,
+    top: 15,
     left: 10,
     zIndex: 10,
     padding: 10,
+
   },
 
 

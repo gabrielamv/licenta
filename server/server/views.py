@@ -2,7 +2,7 @@ import base64
 from django.http import HttpResponse
 from django.core.handlers.wsgi import WSGIRequest
 from django.views.decorators.csrf import csrf_exempt
-from .models import UploadedImage
+from .models import UploadedImage, Simbol
 from django.http import JsonResponse
 
 def index(request: WSGIRequest):
@@ -34,3 +34,14 @@ def upload_image(request: WSGIRequest):
             return JsonResponse({'mesaj':'Operatia s-a finlizat cu succes!', 'imagine':b64img})#aici sa iti dea raspuns json
         return JsonResponse({'eroare':'EROARE!'})
     
+def simboluri(request):
+    d = []
+    for simbol in Simbol.objects.all():
+        d.append({
+            'nume': simbol.nume,
+            'semnificatie': simbol.semnificatie,
+            'descriere': simbol.descriere,
+            'regiuni': simbol.regiuni,
+            'id_imagine': simbol.id_imagine,
+        })
+    return JsonResponse({'simboluri': d})

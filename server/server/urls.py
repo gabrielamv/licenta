@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 #from .views import *
@@ -24,5 +26,7 @@ urlpatterns = [
     #path('', include('index.urls')),
     path('admin/', admin.site.urls),
     path('upload/', views.upload_image),
+     path('simboluri/', views.simboluri),
      path('', views.index)
 ]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

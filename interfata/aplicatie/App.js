@@ -1,22 +1,25 @@
 import Home from './src/home';
 import CameraApp from './src/camera';
 import Galerie from './src/galerie';
+import Descopera from './src/descopera';
 import Preview from './src/preview';
 import Result from './src/result';
+import SplashScreen from './src/splashscreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import {Lora_700Bold } from '@expo-google-fonts/lora';
-import {CormorantGaramond_400Regular, CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
+import { CormorantGaramond_400Regular, CormorantGaramond_700Bold, CormorantGaramond_300Light_Italic, CormorantGaramond_400Regular_Italic, CormorantGaramond_500Medium_Italic, CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond';
 import {Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
+import {DancingScript_400Regular } from '@expo-google-fonts/dancing-script';
 import AppLoading from 'expo-app-loading';
-import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from 'react';
+import { Asset } from "expo-asset";
+
 
 const Stack = createNativeStackNavigator();
 
-
-SplashScreen.preventAutoHideAsync();
+Asset.loadAsync([require("./assets/final_decupat.png")])
 
 export default function App() {
 
@@ -25,8 +28,13 @@ export default function App() {
     Lora_700Bold,
     CormorantGaramond_400Regular,
     CormorantGaramond_700Bold,
+    CormorantGaramond_300Light_Italic,
+    CormorantGaramond_400Regular_Italic,
+    CormorantGaramond_500Medium_Italic,
+    CormorantGaramond_500Medium,
     Lato_400Regular,
     Lato_700Bold,
+    DancingScript_400Regular,
   });
   
   useEffect(() => {
@@ -47,15 +55,21 @@ export default function App() {
   return (
     <NavigationContainer>
 
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="SplashScreen">
 
+
+      <Stack.Screen
+          name="SplashScreen"
+          component={SplashScreen}
+          options={{headerShown:false}}
+      />
 
       <Stack.Screen
           name="Home"
           component={Home}
           options={{headerShown:false}}
       />
-      
+
       <Stack.Screen
         name="Galerie"
         component={Galerie}
@@ -65,6 +79,12 @@ export default function App() {
         <Stack.Screen
           name="Camera"
           component={CameraApp}
+          options={{headerShown: false}}
+          />
+
+        <Stack.Screen
+          name="Descopera"
+          component={Descopera}
           options={{headerShown: false}}
           />
 

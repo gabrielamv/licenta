@@ -25,10 +25,29 @@ export default function Home({navigation}) {
   const lastIndex = useRef(0);
 
   const images = [
-    { image: require("../assets/home.jpg") },
-    { image: require("../assets/ie2.jpg") },
-    { image: require("../assets/ie4.jpg") },
-    { image: require("../assets/ie3.jpg") },
+    { image: require("../assets/home.jpg"),
+      text: "Costumul popular este o carte de identitate a sufletului românesc.",
+      //position: 'top'
+      textBoxStyle: {top: undefined, bottom: undefined, left: undefined, right:undefined, alignSelf: "center", justifyContent: "center"}
+    },
+
+    { image: require("../assets/ie2.jpg"),
+      text: "În costumul popular se păstreaza nu numai arta, ci și gândirea unei comunități.",
+      //position: 'bottom'
+      textBoxStyle: {}
+   },
+
+    { image: require("../assets/ie4.jpg"),
+      text: "Ia nu e îmbrăcăminte. E identitate.",
+      //position: 'top'
+      textBoxStyle: {}
+
+    },
+    { image: require("../assets/ie3.jpg"),
+      text: "Fiecare ie spune o poveste.",
+      //position: 'bottom'
+      textBoxStyle: {}
+    },
   ];
 
   return (
@@ -71,10 +90,20 @@ export default function Home({navigation}) {
 
         />
 
-        <View style={styles.textBox}>
+        {/* <View style={styles.textBox}>
           <Text style={styles.text}>
-            Cusătura păstrează {"\n"} povestea.{"\n"}
-            <Text style={styles.italic}>Restaurarea</Text> {"\n"} o reînvie.
+            "Costumul popular este {"\n"}
+            <Text style={styles.italic}>o carte de identitate</Text> {"\n"} a sufletului românesc."
+            {"\n"}       Romulus Vulcănescu
+          </Text>
+        </View> */}
+
+        <View style={[
+            styles.textBox,
+            images[activeIndex].textBoxStyle
+        ]}>
+          <Text style={styles.text}>
+            { images[activeIndex].text }
           </Text>
         </View>
 
@@ -94,9 +123,9 @@ export default function Home({navigation}) {
 
       {/* Butoane */}
       <View style={styles.buttonContainer}>
-        <CustomButton icon="camera-outline" text="Restaurează" onPress = { () => navigation.navigate("Camera")} />
+        <CustomButton icon="camera-outline" text="Scanează" onPress = { () => navigation.navigate("Camera")} />
         <CustomButton icon="images-outline" text="Vezi restaurările tale" onPress = { () => navigation.navigate("Galerie")} />
-        <CustomButton icon="search" text="Descoperă simbolurile"  /> 
+        <CustomButton icon="search" text="Descoperă simbolurile" onPress = { () => navigation.navigate("Descopera")} /> 
       </View>
     </View>
   );
@@ -153,7 +182,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     width: screenWidth,
     height: screenHeight * 0.5,
-    borderRadius: 8,
+    //borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -166,9 +195,9 @@ const styles = StyleSheet.create({
   },
   textBox: {
     position: "absolute",
-    top: 16,
+    //top: 16,
     alignSelf: "center",
-    left: 60,
+    //left: 60,
     padding: 12,
     backgroundColor: "rgba(245, 233, 214, 0.85)",
     opacity: 0.8,
@@ -194,9 +223,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     margin: 5,
     backgroundColor: "#d8c7b0",
     opacity: 0.5,
@@ -215,7 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "transparent",
     borderColor: "#4c1f1f",
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -224,9 +253,11 @@ const styles = StyleSheet.create({
     width: Math.min(screenWidth * 0.68, 300),
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: 20,
     color: "#4c1f1f",
     fontFamily: "Lato_400Regular",
+    //fontFamily: "CormorantGaramond_500Medium_Italic",
+    //fontFamily: "CormorantGaramond_400Regular",
     fontWeight: "500",
   },
 });

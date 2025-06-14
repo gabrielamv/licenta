@@ -28,18 +28,26 @@ export default function Galerie({navigation}) {
     useEffect(() => {
         const fetchImages = async () => {
             const storedImages = await AsyncStorage.getItem("restaurari");
-            const parsed = storedImages ? JSON.parse(storedImages) : [];
+            
+            let parsed = storedImages ? JSON.parse(storedImages) : [];
+            
+            parsed = parsed.filter((item) => typeof item === 'object')
+            .filter((item) => typeof item.uri === 'string')
+            .sort((a, b) => {a.savedAt < b.savedAt ? 1 : -1});
             setImages(parsed);
         };
         fetchImages();
     }, []);
 
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item }) => {
+        
+        console.log(item)
+        return (
         <TouchableOpacity
-            onPress = {() => navigation.navigate("Result", { restoredImage: item, fromGallery: true})}>
+            onPress = {() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true})}>
             <Image source = {{ uri: item.uri}} style={styles.image}/>
         </TouchableOpacity>
-    );
+    )};
 
     return (
         <View style={styles.container}>
