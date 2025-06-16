@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   View,
@@ -32,34 +32,8 @@ const Preview = ({ route }) => {
   const { photoUri } = route.params;
   const navigation = useNavigation();
   const [selectedModel, setSelectedModel] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownHeight = useState(new Animated.Value(0))[0];
   const [isLoading, setIsLoading] = useState(false);
-  const [infoMessage, setinfoMessage] = useState(null);
-  const fadeAnim = useState(new Animated.Value(0)).current; // pentru mesajul de info
 
-  useEffect(() => {
-    if(infoMessage){
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-
-      const timer = setTimeout(() => {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => setinfoMessage(null)); // setează infoMessage la null după animație
-      }, 3000); // afișează mesajul timp de 3 secunde
-      return () => clearTimeout(timer); // curăță timer-ul la demontare
-    }
-  }, [infoMessage]);
-
-
-
-// const aiModels = ['Îmbunătățire rezoluție', 'Îmbunătățire poză'];
 const aiModels = [
   {
     nume: 'Superrezoluție',
@@ -120,13 +94,6 @@ const [showModelMenu, setShowModelMenu] = useState(false);
   async function sendImage() {
     console.log("Butonul a fost apăsat");
 
-    if (!selectedModel) {
-      console.log("Niciun model AI selectat");
-      //Alert.alert("Selectează un model AI înainte de a continua.");
-      setinfoMessage("Selectează un model AI înainte de a continua.");
-      return;
-    }
-
     console.log("Imagine capturată:", photoUri);
 
     const permission = await MediaLibrary.requestPermissionsAsync();
@@ -156,7 +123,8 @@ const [showModelMenu, setShowModelMenu] = useState(false);
       console.log("Trimit request spre server...");
       setIsLoading(true);
       const response = await fetch("http://192.168.0.100/upload/", {
-        method: "POST",
+        //const response = await fetch("http://172.18.160.1/upload/", {
+          method: "POST",
         body: form,
       });
 
@@ -215,30 +183,6 @@ const [showModelMenu, setShowModelMenu] = useState(false);
         </View>
         )}
 
-        {/* cod adaugat 14 iunie */}
-
-        {/* {infoMessage && (  */}
-
-          {/* <Animated.View style = {[styles.messageBox, {opacity: fadeAnim}]}>
-          <TouchableOpacity
-            onPress={() => setinfoMessage(null)}
-              style={styles.closeButton}
-            >
-            <Ionicons name="close" size={20} color="#4c1f1f" />
-            </TouchableOpacity>
-
-            <View style={{flexDirection: "row", alignItems: "center"}}>
-            <Ionicons
-              name="information-circle-outline"
-              size={20}
-              color="#4c1f1f"
-              style={{marginRight: 6}}
-            />
-            <Text style={styles.messageText}>{infoMessage}</Text>
-            </View>
-            </Animated.View> */}
-        {/* )}   */}
-
       <Pressable
         onPress={sendImage}
         style = {({ pressed }) => [
@@ -285,18 +229,9 @@ const [showModelMenu, setShowModelMenu] = useState(false);
 };
 
 const styles = StyleSheet.create({
-
-
-  dropdown:{
-    backgroundColor:"#f5e9d6",
-    borderColor: "#4c1f1f",
-    height: 40,
-    borderWidth: 1.3,
-  },
-
   cancelButton: {
     position: "absolute",
-    top: 15,
+    top: 25,
     left: 10,
     backgroundColor: "transparent",
     padding: 10,
@@ -327,49 +262,6 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
 
-  dropdownToggleContainer: {
-    position: "absolute",
-    bottom: 30,
-    left: 10,
-    right: 10,
-    zIndex: 10,
-    elevation: 10,
-  },
-
-  dropdownRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  dropdownToggleButton: {
-    backgroundColor: "#4c1f1f",
-    //padding: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 25,
-    //flexDirection: 'row',
-    //alignItems: 'center',
-    //justifyContent: 'space-between',
-    marginRight: 10,
-  },
-
-  dropdownToggleText: {
-    color: "#4c1f1f",
-    fontSize: 18,
-    backgroundColor:"#f5e9d6",
-    //fontFamily: "PlayfairDisplay_400Regular",
-    fontFamily: "CormorantGaramond_500Medium_Italic",
-  },
-
-  dropdownListContainer: {
-    overflow: "hidden",
-    marginTop: 5,
-  
-  
-  },
-
-
   modelList: {
     paddingHorizontal: 10,
     flexDirection: "row",
@@ -377,14 +269,14 @@ const styles = StyleSheet.create({
   },
 
   modelItem: {
-    backgroundColor: "#f5e9d6",
-    paddingVertical: 10,
+    // backgroundColor: "#f5e9d6aa",
+    paddingVertical: 15,
     alignItems: "center",
     paddingHorizontal: 15,
     borderRadius: 10,
     //marginHorizontal: 5,
-    marginVertical: 6,
-    
+    // marginVertical: 6,
+    borderBottomWidth: 1,
   },
 
   selectedModelItem: {
@@ -425,7 +317,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5e9d6",
+    backgroundColor: "#f5e9d6cc",
     borderColor: "#4c1f1f",
     borderWidth: 1.3,
     borderRadius: 12,
@@ -450,7 +342,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-end",
-    backgroundColor: "#f5e9d6",
+    backgroundColor: "#f5e9d6aa",
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 2,
@@ -464,10 +356,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 76,
     right: 10,
-    backgroundColor: "#f5e9d6",
+    backgroundColor: "#f5e9d6aa",
     //fie borderRadius=12, fie borderRadius=16 //trebuie sa ma mai decid
     borderRadius: 16,
-    paddingVertical: 12,
+    // paddingVertical: 12,
     paddingHorizontal: 18,
     //padding: 10,
     borderWidth: 1.3,
@@ -482,48 +374,6 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex:1000,
   },
-
-  messageBox:{
-    position: "absolute",
-    bottom: 75,
-    top: 40,
-    left: 10,
-    right: 10,
-    backgroundColor: "#f5e9d6",
-    padding: 18,
-    marginHorizontal:10,
-    marginVertical:235,
-    borderRadius: 16,
-    borderColor: "#4c1f1f",
-    borderWidth: 1.3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    zIndex: 999,
-  },
-
-  messageText: {
-    color: "#4c1f1f",
-    fontSize: 18,
-    fontFamily: "CormorantGaramond_500Medium_Italic",
-    textAlign: "center",
-    left: 3,
-  },
-
-  closeButton:{
-    position: "absolute",
-    top: 2,
-    //right: 0,
-    left: 0,
-    //backgroundColor: "transparent",
-    padding: 4,
-    zIndex: 10, // asigură-te că e deasupra
-  }
-
-
-
 });
 
 export default Preview;

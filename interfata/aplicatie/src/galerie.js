@@ -7,6 +7,9 @@ Image,
 FlatList,
 TouchableOpacity,
 Dimensions,
+LayoutAnimation,
+Platform,
+UIManager,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
@@ -33,21 +36,71 @@ export default function Galerie({navigation}) {
             
             parsed = parsed.filter((item) => typeof item === 'object')
             .filter((item) => typeof item.uri === 'string')
-            .sort((a, b) => {a.savedAt < b.savedAt ? 1 : -1});
+            .filter((val, idx, arr) => {return arr.findIndex(el => el.uri == val.uri) === idx;})
+            .sort((a, b) => {a.savedAt < b.savedAt ? 1 : -1})
             setImages(parsed);
         };
         fetchImages();
     }, []);
 
-    const renderItem = ({ item }) => {
+        useEffect(() => {
+            if (Platform.OS === 'android') {
+                UIManager.setLayoutAnimationEnabledExperimental &&
+                UIManager.setLayoutAnimationEnabledExperimental(true);
+        }
+      }, []);
+      
+
+    //const renderItem = ({ item, index }) => {
         
-        console.log(item)
-        return (
-        <TouchableOpacity
-            onPress = {() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true})}>
-            <Image source = {{ uri: item.uri}} style={styles.image}/>
+        //console.log(item)
+        //cod comentat la 14 iunie
+    //     return (
+    //     <TouchableOpacity
+    //         onPress = {() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true})}>
+    //         <Image source = {{ uri: item.uri}} style={styles.image}/>
+    //     </TouchableOpacity>
+    // )
+    //---------------------
+
+    const renderItem = ({ item }) => {
+        if (!item || !item.uri) return null;
+
+    return (   
+    <View style={{ position: "relative" }}>
+        <TouchableOpacity onPress={() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true })}>
+            <Image source={{ uri: item.uri }} style={styles.image} />
         </TouchableOpacity>
-    )};
+
+        <TouchableOpacity
+            onPress={() => deleteImage(item.uri)}
+            style={{
+            position: "absolute",
+             top: 10,
+            right: 10,
+            padding: 5,
+            borderRadius: 20,
+        }}
+        >
+        <Ionicons name="trash" size={30} color="#8B1E3F" />
+        </TouchableOpacity>
+    </View>
+    )
+};
+
+    //cod adaugat pe 14 iunie
+    const deleteImage = async (uriToDelete) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        const storedImages = await AsyncStorage.getItem("restaurari");
+        let parsed = storedImages ? JSON.parse(storedImages) : [];
+      
+        const filtered = parsed.filter(item => item.uri !== uriToDelete);
+        await AsyncStorage.setItem("restaurari", JSON.stringify(filtered));
+        setImages(filtered); // update state pentru a reflecta modificarea
+      };
+
+    //------------
+      
 
     return (
         <View style={styles.container}>
@@ -60,7 +113,8 @@ export default function Galerie({navigation}) {
 
                 <FlatList
                     data={images}
-                    keyExtractor={(item, index) => `${item}-${index}`}
+                    //keyExtractor={(item, index) => `${item}-${index}`}
+                    keyExtractor={(item, index) => `${item.uri}-${index}`}
                     renderItem={renderItem}
                     numColumns={2}
                     contentContainerStyle={{padding: 8}}

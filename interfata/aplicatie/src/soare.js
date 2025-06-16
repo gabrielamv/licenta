@@ -9,7 +9,7 @@ export default function SpiralaAnimata() {
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 2000, // durata unei rotații (în milisecunde)
-        useNativeDriver: true,
+        useNativeDriver: false,
       })
     ).start();
   }, []);

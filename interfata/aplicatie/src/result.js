@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Image,
@@ -6,12 +6,13 @@ import {
   Text,
   TouchableOpacity,
   Dimensions,
-  Pressable
+  Pressable,
+  Animated as RNAnimated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Animated, {
-    useAnimatedGestureHandler,
+   useAnimatedGestureHandler,
     useAnimatedStyle,
     useSharedValue,
     withDecay,
@@ -35,6 +36,32 @@ const Result = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { restoredImage } = route.params;
+  const {fromGallery} = route.params;
+
+  //cod adaugat 14 iunie
+  const [infoMessage, setinfoMessage] = useState(null);
+  const fadeAnim = useRef(new RNAnimated.Value(0)).current; // pentru mesajul de info
+
+  useEffect(() => {
+    if(infoMessage){
+      RNAnimated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+
+      const timer = setTimeout(() => {
+        RNAnimated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start(() => setinfoMessage(null)); // setează infoMessage la null după animație
+      }, 3000); // afișează mesajul timp de 3 secunde
+      return () => clearTimeout(timer); // curăță timer-ul la demontare
+    }
+  }, [infoMessage]);
+
+  //------------
 
   const imageUri =
   typeof restoredImage === "string"
@@ -144,10 +171,12 @@ const Result = () => {
     // }
       array.push(newEntry);
       await AsyncStorage.setItem("restaurari", JSON.stringify(array));
-      alert("Imagine salvată în galerie!");
+      //alert("Imagine salvată în galerie!");
+      setinfoMessage("Imagine salvată în galerie!");
     } catch (e) {
       console.log("Eroare la salvare:", e);
-      alert("A apărut o eroare la salvarea imaginii.");
+      //alert("A apărut o eroare la salvarea imaginii.");
+      setinfoMessage("A apărut o eroare la salvarea imaginii.");
     }
 
   };
@@ -157,7 +186,7 @@ const Result = () => {
     
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
+        <Ionicons name={fromGallery ? "close" : "arrow-back" } size={30} color="#4c1f1f" />
       </TouchableOpacity>
 
         {/* <Image source={{ uri: restoredImage }} style={styles.image} /> */}
@@ -177,7 +206,8 @@ const Result = () => {
         </PanGestureHandler>
       </GestureHandlerRootView>
 
-      {/*Buton de salvare a pozei */}  
+      {/*Buton de salvare a pozei */}
+      {!fromGallery && (  
       <Pressable 
         onPress = {saveToGallery}
         style={({ pressed }) => [
@@ -187,6 +217,19 @@ const Result = () => {
         <ImageDown size={20} color="#4c1f1f" style={{ marginRight: 8 }} />
         <Text style={styles.saveButtonText}>Salvează</Text>
         </Pressable>
+      )}
+
+        {infoMessage &&(
+          <RNAnimated.View style={[styles.messageBox, {opacity: fadeAnim}]}>
+
+          <TouchableOpacity onPress={  () => setinfoMessage(null)} style = {styles.closeButton}>
+            <Ionicons name="close" size={20} color="#4c1f1f" />
+          </TouchableOpacity>
+
+          <Text style = {styles.messageText}>{infoMessage}</Text>
+          </RNAnimated.View>
+        )}
+
     </View>
   );
 };
@@ -216,7 +259,7 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: "absolute",
-    top: 15,
+    top: 25,
     left: 10,
     zIndex: 10,
     padding: 10,
@@ -245,6 +288,54 @@ const styles = StyleSheet.create({
     fontFamily: "Lato_400Regular",
     fontWeight: "500",
   },
+
+  messageBox:{
+    position: "absolute",
+    bottom: 75,
+    top: 50,
+    //left: 10,
+    //right: 10,
+    maxWidth:300,
+    alignSelf: "center",
+    backgroundColor: "#f5e9d6",
+    //padding: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    //marginHorizontal:5,
+    marginVertical:235,
+    borderRadius: 16,
+    borderColor: "#4c1f1f",
+    borderWidth: 1.3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 999,
+    //transform: [{ translateY: -75 }],
+  },
+
+
+
+  messageText:{
+    color: "#4c1f1f",
+    fontSize: 18,
+    fontFamily: "CormorantGaramond_500Medium_Italic",
+    textAlign: "center",
+    left: 3,
+    top: 12,
+  },
+
+  closeButton:{
+    position: "absolute",
+    top: 5,
+    right: 5,
+    //left: 0,
+    //backgroundColor: "transparent",
+    padding: 4,
+    zIndex: 10, // asigură-te că e deasupra
+  },
+
 
 
 });

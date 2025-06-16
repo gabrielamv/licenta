@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, use } from "react";
 import {
   View,
   Text,
@@ -20,9 +20,25 @@ const aspectRatio = screenHeight / screenWidth;
 
 export default function Home({navigation}) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [simboluri, setSimboluri] = useState([]);
 
   const carouselRef = useRef(null);
   const lastIndex = useRef(0);
+
+  useEffect(() => {
+    const fetchSimboluri = async () => {
+      try {
+        //const response = await fetch('http://172.18.160.1:80/simboluri');
+        const response = await fetch('http://192.168.0.100:80/simboluri');
+        const data = await response.json();
+        setSimboluri(data);
+      } catch (error) {
+        console.error('Eroare la fetch simboluri:', error);
+      } 
+    };
+
+    fetchSimboluri();
+  }, []);
 
   const images = [
     { image: require("../assets/home.jpg"),
@@ -123,7 +139,7 @@ export default function Home({navigation}) {
 
       {/* Butoane */}
       <View style={styles.buttonContainer}>
-        <CustomButton icon="camera-outline" text="Scanează" onPress = { () => navigation.navigate("Camera")} />
+        <CustomButton icon="camera-outline" text="Scanează" onPress = { () => navigation.navigate("Camera", {simboluri})} />
         <CustomButton icon="images-outline" text="Vezi restaurările tale" onPress = { () => navigation.navigate("Galerie")} />
         <CustomButton icon="search" text="Descoperă simbolurile" onPress = { () => navigation.navigate("Descopera")} /> 
       </View>

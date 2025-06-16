@@ -12,6 +12,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 
 export default function CameraApp() {
@@ -64,6 +65,19 @@ export default function CameraApp() {
     }
   }
 
+  async function pickImageFromGallery() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      // allowsEditing: true,
+      quality: 1,
+    });
+  
+    if (!result.canceled && result.assets.length > 0) {
+      navigation.navigate("Preview", { photoUri: result.assets[0].uri });
+    }
+  }
+  
+
   return (
     <View style={{ flex: 1 }}>
       <CameraView style={{ flex: 1 }} facing={cameraType} ref={cameraRef}>
@@ -72,6 +86,11 @@ export default function CameraApp() {
             <Image source={require("../assets/logo_home.png")} style={styles.cameraLogo} />
           </View>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={pickImageFromGallery} style={styles.galleryButton}>
+          <Ionicons name="image-outline" size={28} color="#4c1f1f" />
+        </TouchableOpacity>
+
       </CameraView>
 
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -129,12 +148,28 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: "absolute",
-    top: 15,
+    top: 25,
     left: 10,
     zIndex: 10,
     padding: 10,
 
   },
+
+  galleryButton: {
+    position: "absolute",
+    bottom: 40,
+    // top: 20,
+    left: 30,
+    backgroundColor: "#f5e9d6aa",
+    padding: 10,
+    borderRadius: 25,
+    borderColor: "#4c1f1f",
+    borderWidth: 1.3,
+    zIndex: 10,
+    height: 50,
+    width: 50,
+  },
+  
 
 
 });
