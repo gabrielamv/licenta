@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -19,10 +20,23 @@ const aspectRatio = screenHeight / screenWidth;
 
 export default function Descopera ({route}) {
 
-    const { simboluri } = route.params;
+    //const { simboluri } = route.params;
     const navigation = useNavigation();
-    const [selectedSimbol, setSelectedSimbol] = useState(null);
+    const [simbolSelectat, setSimbolSelectat] = useState(null);
     //const [simboluri, setSimboluri] = useState([]);
+    //const { simboluri = [] } = route.params || {};
+    const simboluri = (route.params?.simboluri?.simboluri) || [];
+    console.log("PARAMS PRIMITE:", route.params);
+
+
+    //console.log("Simboluri primite:", simboluri);
+
+
+    const simboluriCuUri = simboluri.map(simbol => ({
+        ...simbol,
+        uri: `http://192.168.0.100:80/static/motive/${simbol.id_imagine}`
+      }));
+    
 
 
     const handleBack = () => {
@@ -57,18 +71,26 @@ export default function Descopera ({route}) {
     // </View>
         <TouchableOpacity
             onPress={() => setSimbolSelectat(item)}
-            style={{ flex: 1, margin: 8 }}
+            //style={{ flex: 1, margin: 8, alignItems: "center", justifyContent: "center" }}
+            style={styles.symbolWrapper}
         >
+
+        <View style={styles.symbolBackround}>
             <Image
             source={{ uri: item.uri }}
-            style={{
-                width: screenWidth / 2 - 16,
-                height: 200,
-                borderRadius: 10,
-            }}
-            />
-            <Text style={{ textAlign: "center", marginTop: 5 }}>{item.nume}</Text>
+            // style={{
+            //     // width: screenWidth / 2 - 120,
+            //     // //height: 'auto',
+            //     // //height: screenHeight * 0.09,  // 18% din înălțimea ecranului
+            //     // borderRadius: 10,
+            //     // resizeMode: "contain",
+            //     // aspectRatio: 1, // păstrează aspectul imaginii
 
+            // }}
+            style={styles.symbolImage}
+            />
+            </View>
+            <Text style={styles.symbolText}>{item.nume}</Text>
         </TouchableOpacity>
 
     );
@@ -77,7 +99,8 @@ export default function Descopera ({route}) {
 
 const renderDetaliiSimbol = () => {
     return (
-      <View style={{ flex: 1, backgroundColor: "#f5e9d6", padding: 20 }}>
+      <View style={{ flex: 1, backgroundColor: "#f5e9d6", padding: 20, position: "absolute", top: 0, bottom:0, left: 0, right: 0, justifyContent: "center", alignItems: "center"}}>
+      
         <TouchableOpacity onPress={handleBack} style={{ marginBottom: 20 }}>
           <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
         </TouchableOpacity>
@@ -113,8 +136,8 @@ const renderDetaliiSimbol = () => {
           </TouchableOpacity>
 
           <FlatList
-            data={simboluri}
-            keyExtractor={(item, index) => `${item.uri}-${index}`}
+            data={simboluriCuUri}
+            keyExtractor={(item, index) => `${item.id_imagine}-${index}`}
             renderItem={renderItem}
             numColumns={2}
             contentContainerStyle={{ padding: 8 }}
@@ -158,6 +181,44 @@ const styles = StyleSheet.create({
       left: 10,
       zIndex: 10,
       padding: 10,
+    },
+
+    symbolWrapper:{
+        flex: 1,
+        margin: 8,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    symbolBackround: {
+        //backgroundColor: "#ece4d0",
+        //backgroundColor: "#e6c7aa",
+        //backgroundColor: "#e6d4b4",
+        //backgroundColor: "#f3dec3",
+        backgroundColor: "#fdf6ec",
+        padding: 12,
+        borderRadius: 12,
+        elevation: 6, 
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 6,
+        borderWidth: 0.5,
+        borderColor: "#d8c7b0",
+    },
+    symbolImage:{
+        width: screenWidth / 2 - 120,
+        aspectRatio: 1, // păstrează aspectul imaginii
+        //borderRadius: 10,
+        resizeMode: "contain",
+        //aspectRatio: 1, // păstrează aspectul imaginii
+    },
+    symbolText:{
+        textAlign: "center",
+        marginTop: 10,
+        fontFamily: "Lato_400Regular",
+        fontSize: 16,
+        color: "#4c1f1f",
     },
   });
 

@@ -43,5 +43,7 @@ def simboluri(request):
             'descriere': simbol.descriere,
             'regiuni': simbol.regiuni,
             'id_imagine': simbol.id_imagine,
+            #'id_imagine': simbol.id_imagine,
+            #'id_imagine': simbol.id_imagine.name.split('/')[-1],
         })
     return JsonResponse({'simboluri': d})
