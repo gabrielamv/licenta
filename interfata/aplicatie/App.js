@@ -7,7 +7,7 @@ import Result from './src/result';
 import SplashScreen from './src/splashscreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
+import { useFonts, PlayfairDisplay_700Bold, PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
 import {Lora_700Bold } from '@expo-google-fonts/lora';
 import { CormorantGaramond_400Regular, CormorantGaramond_700Bold, CormorantGaramond_300Light_Italic, CormorantGaramond_400Regular_Italic, CormorantGaramond_500Medium_Italic, CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond';
 import {Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
@@ -25,6 +25,7 @@ export default function App() {
 
   let [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
+    PlayfairDisplay_400Regular,
     Lora_700Bold,
     CormorantGaramond_400Regular,
     CormorantGaramond_700Bold,
