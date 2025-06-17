@@ -4,12 +4,15 @@ import {
   Text,
   StyleSheet,
   Image,
-  Pressable,
   Dimensions,
   TouchableOpacity,
   FlatList,
   Modal,
   ScrollView,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -22,14 +25,9 @@ const aspectRatio = screenHeight / screenWidth;
 
 export default function Descopera ({route}) {
 
-    //const { simboluri } = route.params;
     const navigation = useNavigation();
     const [simbolSelectat, setSimbolSelectat] = useState(null);
-    //const [simboluri, setSimboluri] = useState([]);
-    //const { simboluri = [] } = route.params || {};
     const simboluri = (route.params?.simboluri?.simboluri) || [];
-    console.log("PARAMS PRIMITE:", route.params);
-
     
     const simboluriCuUri = simboluri.map(simbol => ({
         ...simbol,
@@ -50,50 +48,24 @@ export default function Descopera ({route}) {
         if (!item || !item.uri) return null;
 
     return (   
-
-        <TouchableOpacity
-            onPress={() => setSimbolSelectat(item)}
-            style={styles.symbolWrapper}
-        >
-
+        <Pressable
+        onPress={() => setSimbolSelectat(item)}
+        style={({ pressed }) => [
+          styles.symbolWrapper,
+          pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+        ]}
+      >
         <View style={styles.symbolBackround}>
-            <Image
+          <Image
             source={{ uri: item.uri }}
             style={styles.symbolImage}
-            />
-            </View>
-            <Text style={styles.symbolText}>{item.nume}</Text>
-        </TouchableOpacity>
+          />
+        </View>
+        <Text style={styles.symbolText}>{item.nume}</Text>
+      </Pressable>
 
     );
 };
-
-
-//     const renderDetaliiSimbol = () => {
-//     return (
-//       <View style={{ flex: 1, backgroundColor: "#f5e9d6", padding: 20, position: "absolute"}}>
-   
-
-//         <TouchableOpacity onPress={handleBack} style={{ marginBottom: 20 }}>
-//           <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
-//         </TouchableOpacity>
-        
-
-//         <Image
-//           source={{ uri: simbolSelectat.uri }}
-//           style={{ width: "100%", height: 300, borderRadius: 12 }}
-//         />
-
-//         <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 20 }}>
-//           {simbolSelectat.nume}
-//         </Text>
-
-//         <Text style={{ fontSize: 16, marginTop: 10 }}>
-//           {simbolSelectat.descriere}
-//         </Text>
-//       </View>
-//     );
-// };
 
   return (
 
@@ -117,51 +89,55 @@ export default function Descopera ({route}) {
     contentContainerStyle={{ padding: 8 }}
   />
 
-  {/* MODAL — detalii simbol */}
   <Modal
-    visible={!!simbolSelectat}
-    transparent
-    animationType="fade"
-    onRequestClose={() => setSimbolSelectat(null)}
-  >
-    <Pressable style={styles.modalOverlay} onPress={() => setSimbolSelectat(null)}>
-      <View style={styles.modalContent} onPress={() => {}}>
-        <TouchableOpacity
-          onPress={() => setSimbolSelectat(null)}
-          style={styles.closeButton}
-        >
-          <Ionicons name="close" size={24} color="#4c1f1f" />
-        </TouchableOpacity>
+  visible={!!simbolSelectat}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setSimbolSelectat(null)}
+>
+  <View style={styles.modalOverlay}>
+    {/* Zona transparentă pentru închidere */}
+    <TouchableWithoutFeedback onPress={() => setSimbolSelectat(null)}>
+      <View style={styles.modalBackdrop} />
+    </TouchableWithoutFeedback>
 
+    {/* Pop-up cu conținut scrollabil */}
+    <View style={styles.modalContent}>
+      <TouchableOpacity
+        onPress={() => setSimbolSelectat(null)}
+        style={styles.closeButton}
+      >
+        <Ionicons name="close" size={36} color="#4c1f1f" />
+      </TouchableOpacity>
+
+      <ScrollView
+        contentContainerStyle={styles.modalScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Image source={{ uri: simbolSelectat?.uri }} style={styles.modalImage} />
-        <Text style={styles.modalTitle}>{simbolSelectat?.nume}</Text>
+            <Text style={styles.modalTitle}>{simbolSelectat?.nume}</Text>
+            
+ 
 
-
-        <ScrollView style={{ flexGrow: 1 }} contentContainerStyle={styles.modalScrollContent}>
-
-              {simbolSelectat?.semnificatie && (
-                <Text style={styles.modalDescription}>
-                  Semnificație: {simbolSelectat.semnificatie}
-                </Text>
-              )}
-
-              {simbolSelectat?.descriere && (
-                <Text style={styles.modalDescription}>
-                  Descriere: {simbolSelectat.descriere}
-                </Text>
-              )}
-
-              {simbolSelectat?.regiuni && (
-                <Text style={styles.modalDescription}>
-                  Regiuni:{simbolSelectat.regiuni}
-                </Text>
-              )}
-            </ScrollView>
-
-        {/* <Text style={styles.modalDescription}>{simbolSelectat?.descriere}</Text> */}
-      </View>
-    </Pressable>
-  </Modal>
+        {simbolSelectat?.semnificatie && (
+          <Text style={[styles.modalDescription, {alignSelf: "strech"}]}>
+            Semnificație: {simbolSelectat.semnificatie}
+          </Text>
+        )}
+        {simbolSelectat?.descriere && (
+          <Text style={[styles.modalDescription, {alignSelf: "strech"}]}>
+            Descriere: {simbolSelectat.descriere}
+          </Text>
+        )}
+        {simbolSelectat?.regiuni && (
+          <Text style={[styles.modalDescription, {alignSelf: "strech"}]}>
+            Regiuni: {simbolSelectat.regiuni}
+          </Text>
+        )}
+      </ScrollView>
+    </View>
+  </View>
+</Modal>
 </View>
 
   );
@@ -221,8 +197,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         elevation: 6, 
         shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowOffset: { width: 0, height: 1 },
         shadowRadius: 6,
         borderWidth: 0.5,
         borderColor: "#d8c7b0",
@@ -236,11 +212,16 @@ const styles = StyleSheet.create({
     },
     symbolText:{
         textAlign: "center",
-        marginTop: 10,
+        marginTop: 8,
         // fontFamily: "Lato_400Regular",
-        fontFamily: "PlayfairDisplay_400Regular",
-        fontSize: 16,
+        // fontFamily: "PlayfairDisplay_400Regular",
+        //fontFamily: "Spectral_300Light",
+        //fontFamily: "EBGaramond-Regular",
+        fontFamily:"Spectral_300Light_Italic",
+        fontSize: 17,
         color: "#4c1f1f",
+        lineHeight: 22,
+        letterSpacing: 0.3,
     },
 
     modalOverlay:{
@@ -265,8 +246,8 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 20,
         width: "90%",
-        maxHeight: "80%",
-        //alignItems: "center",
+        maxHeight: screenHeight*0.8,
+        alignItems: "center",
         shadowColor: "#000",
         shadowOpacity: 0.3,
         shadowOffset: { width: 0, height: 2 },
@@ -284,27 +265,33 @@ const styles = StyleSheet.create({
         height: 200,
         resizeMode: "contain",
         borderRadius: 12,
+        alignSelf: "center",
       },
 
       modalTitle: {
-        fontSize: 24,
+        fontSize: 30,
         fontWeight: "bold",
         color: "#4c1f1f",
         marginTop: 0,
         marginBottom: 10,
         textAlign: "center",
         fontWeight: "bold",
-        fontFamily: "PlayfairDisplay_700Bold",
+        //fontFamily: "PlayfairDisplay_700Bold",
+        //fontFamily: "EBGaramond-Regular",
+        //fontFamily:"Spectral_300Light_Italic",
+        fontFamily:"DancingScript_400Regular",
       },
 
       modalDescription: {
-        fontSize: 16,
+        fontSize: 17,
         color: "#4c1f1f",
-        marginTop: 10,
+        marginTop: 18,
         textAlign: "justify",
         lineHeight: 22,
         paddingHorizontal: 5,
-        fontFamily: "PlayfairDisplay_400Regular",
+        //fontFamily: "PlayfairDisplay_400Regular",
+        //fontFamily: "Spectral_300Light",
+        fontFamily:"Spectral_300Light_Italic",
       },
 
       closeButton: {
@@ -312,7 +299,7 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         zIndex: 10,
-        padding: 8,
+        padding: 0,
       },
 
       modalScrollContent: {
@@ -320,10 +307,35 @@ const styles = StyleSheet.create({
         //alignItems: "center", // Centrează conținutul în scroll view
         //flexGrow: 1, // Permite scroll view-ului să ocupe tot spațiul disponibil
         //width   : "100%", // Asigură că scroll view-ul ocupă întreaga lățime
-        alignItems: "center", // Centrează conținutul în scroll view
-        paddingTop: 10, // Spațiu de sus pentru conținutul scrollabil
+        //alignItems: "center", // Centrează conținutul în scroll view
+        paddingTop: 40, // Spațiu de sus pentru conținutul scrollabil
 
       },
+
+      modalBackdrop: {
+        ...StyleSheet.absoluteFillObject,
+      },
+
+      modalTouchableArea: {
+        width: "100%",
+        alignItems: "center",
+      },
+      modalContent: {
+        backgroundColor: "#f5e9d6",
+        borderRadius: 16,
+        width: "90%",
+        maxHeight: screenHeight * 0.8,
+        padding: 20,
+        borderWidth: 1.5,
+        borderColor: "#4c1f1f",
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 8,
+        elevation: 8,
+      },
+
+
 
   });
 

@@ -13,13 +13,21 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Această aplicație salvează imagini în galeria ta.",
+        "NSPhotoLibraryUsageDescription": "Această aplicație are nevoie de acces la galerie pentru a salva poze."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo_home.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "READ_MEDIA_IMAGES",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/logo_home.png"

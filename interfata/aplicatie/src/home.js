@@ -87,9 +87,22 @@ export default function Home({navigation}) {
           loop
           data={images}
           scrollAnimationDuration={1000}
+
+          // renderItem={({ item }) => (
+          //   <Image source={item.image} style={styles.carouselImage} />
+          // )}
+
           renderItem={({ item }) => (
-            <Image source={item.image} style={styles.carouselImage} />
+            <View style={styles.carouselSlide}>
+              <Image source={item.image} style={styles.carouselImage} />
+              <View style={[styles.textBox, item.textBoxStyle]}>
+                <Text style={styles.text}>{item.text}</Text>
+              </View>
+            </View>
           )}
+
+
+
           onProgressChange={(offsetProgress) => {
             let index = Math.round(Math.abs(offsetProgress)/375);
             // index = images.length - 1 - index;
@@ -114,14 +127,14 @@ export default function Home({navigation}) {
           </Text>
         </View> */}
 
-        <View style={[
+        {/* <View style={[
             styles.textBox,
             images[activeIndex].textBoxStyle
         ]}>
           <Text style={styles.text}>
             { images[activeIndex].text }
           </Text>
-        </View>
+        </View> */}
 
         {/* Buline de navigare */}
         <View style={styles.dotsWrapper}>
@@ -271,9 +284,24 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: "#4c1f1f",
-    fontFamily: "Lato_400Regular",
+    //fontFamily: "EB_Garamond_400Regular", 
+    //fontFamily: "Spectral_400Regular",
+    //fontFamily: "Spectral_200ExtraLight",
+    fontFamily: "Spectral_300Light",
     //fontFamily: "CormorantGaramond_500Medium_Italic",
     //fontFamily: "CormorantGaramond_400Regular",
+    //fontFamily: "Merriweather_400Regular",
+    //fontFamily: "CrimsonText_400Regular",
+    //fontFamily: "EBGaramond-Regular",
     fontWeight: "500",
+
+  },
+
+  carouselSlide: {
+    width: screenWidth,
+    height: screenHeight * 0.5,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
 });

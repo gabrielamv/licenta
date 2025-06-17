@@ -23,6 +23,7 @@ import Soare from "./soare";
 
 
 
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 const aspectRatio = screenHeight / screenWidth;
@@ -33,6 +34,31 @@ const Preview = ({ route }) => {
   const navigation = useNavigation();
   const [selectedModel, setSelectedModel] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showModelMenu, setShowModelMenu] = useState(false);
+
+  //nou
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Inițial, opacitate 
+  // Nou: Efect pentru a gestiona animația când showModelMenu se schimbă
+    useEffect(() => {
+      if (showModelMenu) {
+        // Animație de fade in când meniul apare
+        Animated.timing(fadeAnim, {
+          toValue: 1, // Opacitate 1 (vizibil)
+          duration: 200, // Durata animației în milisecunde
+          useNativeDriver: true, // Folosește driverul nativ pentru performanță
+        }).start();
+      } else {
+        // Animație de fade out când meniul dispare
+        Animated.timing(fadeAnim, {
+          toValue: 0, // Opacitate 0 (invizibil)
+          duration: 150, // O durată puțin mai scurtă pentru dispariție
+          useNativeDriver: true,
+        }).start();
+    }
+  }, [showModelMenu, fadeAnim]); // Rulează efectul când showModelMenu sau fadeAnim se schimbă
+
+
+
 
 const aiModels = [
   {
@@ -44,7 +70,6 @@ const aiModels = [
     functie: '/ai/restaurare'
   }
 ];
-const [showModelMenu, setShowModelMenu] = useState(false);
 
 
   const handleBack = () => {
@@ -53,6 +78,7 @@ const [showModelMenu, setShowModelMenu] = useState(false);
 
   const handleModelSelect = (modelId) => {
     setSelectedModel(modelId);
+    setShowModelMenu(false); // închide meniul după alegere
     console.log(`Model AI selectat: ${modelId}`);
   };
 
@@ -79,7 +105,6 @@ const [showModelMenu, setShowModelMenu] = useState(false);
   }
 
   async function compress_image(uri) {
-    return uri
     const compressedImage = await ImageManipulator.manipulateAsync(
         uri,
         [],
@@ -88,6 +113,7 @@ const [showModelMenu, setShowModelMenu] = useState(false);
             format: ImageManipulator.SaveFormat.JPEG,
         }
       );
+      console.log("Imagine comprimată:", compressedImage.uri);
       return compressedImage.uri;
     }
   
@@ -106,7 +132,6 @@ const [showModelMenu, setShowModelMenu] = useState(false);
     try {
       console.log("Comprimam imaginea")
       const compressedImage = await compress_image(photoUri);
-        // const compressedImage = photoUri;
       console.log("Începem salvarea în MediaLibrary...");
       await saveToGalery(compressedImage);
       console.log("Imagine salvată în galerie");
@@ -145,17 +170,8 @@ const [showModelMenu, setShowModelMenu] = useState(false);
       } else {
         console.log("Navighez către Result cu imaginea restaurată");
 
-        //const restoredUri = `${FileSystem.cacheDirectory}result.jpg`;
-        const restoredUri = `${FileSystem.cacheDirectory}result_${Date.now()}.jpg`;
-
-        await FileSystem.writeAsStringAsync(restoredUri, result.imagine, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        console.log("Imagine restaurată salvată local:", restoredUri);
-        await saveToGalery(restoredUri);
-
         setIsLoading(false);
-        navigation.navigate("Result", { restoredImage: restoredUri });
+        navigation.navigate("Result", { restoredImage: compressedImage });
       }
     } catch (error) {
       console.error("Eroare în sendImage:", error);
@@ -200,13 +216,13 @@ const [showModelMenu, setShowModelMenu] = useState(false);
           style={styles.sparkleButton}         
         >
           <WandSparkles size={24} color="#4c1f1f" style={{ marginLeft: 8 }} />
-          <Text style = {{color: "#4c1f1f", marginLeft: 6 }}Model Ai></Text>
+          <Text style = {styles.sparkleButtonText}>Model Ai</Text>
         </TouchableOpacity> 
 
 
         {showModelMenu && (
-          <View style={styles.modelMenu}>
-            {aiModels.map((model) => (
+          <Animated.View  style={[styles.modelMenu, {opacity:fadeAnim}]}>
+            {aiModels.map((model, index) => (
             <TouchableOpacity
               key={model.nume}
               onPress={() => {
@@ -217,12 +233,13 @@ const [showModelMenu, setShowModelMenu] = useState(false);
             style={[
             styles.modelItem,
             selectedModel === model && styles.selectedModelItem,
+            index < aiModels.length - 1 && styles.modelItemBorderBottom, // adaugă bordură doar dacă nu este ultimul element
         ]}
         >
         <Text style={styles.modelText}>{model.nume}</Text>
       </TouchableOpacity>
     ))}
-      </View>
+        </Animated.View>
 )}
     </View>
   );
@@ -269,24 +286,31 @@ const styles = StyleSheet.create({
   },
 
   modelItem: {
-    // backgroundColor: "#f5e9d6aa",
+    backgroundColor: "transparent", // culoare de fundal pentru fiecare model
+    //opacity: 0.9, 
     paddingVertical: 15,
     alignItems: "center",
     paddingHorizontal: 15,
-    borderRadius: 10,
     //marginHorizontal: 5,
     // marginVertical: 6,
-    borderBottomWidth: 1,
+    //borderBottomWidth: 1,
+    //borderColor: "#d8c7b0", 
+  },
+
+  modelItemBorderBottom: { // NOU STIL
+    borderBottomWidth: 1.3,
+    borderColor: "#4c1f1f", // Culoarea bordurii subtile
   },
 
   selectedModelItem: {
     backgroundColor: "#e6c7aa", // culoare pentru modelul selectat
+    borderWidth: 1.3,
   },
 
   modelText: {
     color: "#4c1f1f",
     fontSize: 18,
-    fontFamily: "CormorantGaramond_500Medium_Italic",
+    fontFamily: "Spectral_300Light",
   },
 
   loadingOverlay: {
@@ -328,11 +352,11 @@ const styles = StyleSheet.create({
   },
 
   sendButtonText:{
-    color: "#5a2a2a",
-    fontSize: 20,
+    color: "#4c1f1f",
+    fontSize: 18,
     marginLeft: 8,
     fontWeight: "500",
-    fontFamily: "CormorantGaramond_500Medium_Italic",
+    fontFamily: "Spectral_300Light",
   },
 
   sparkleButton: {
@@ -343,25 +367,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-end",
     backgroundColor: "#f5e9d6aa",
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 2,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderWidth: 1.3,
     borderColor: "#4c1f1f",
     top: 30,
     right: 10,
   },
 
+  sparkleButtonText:{
+    color: "#4c1f1f",
+    marginLeft: 6,
+    fontFamily: "Spectral_300Light",
+    fontSize: 18,
+  },
+
   modelMenu:{
     position: "absolute",
-    top: 76,
+    top: 84,
     right: 10,
     backgroundColor: "#f5e9d6aa",
     //fie borderRadius=12, fie borderRadius=16 //trebuie sa ma mai decid
     borderRadius: 16,
-    // paddingVertical: 12,
-    paddingHorizontal: 18,
-    //padding: 10,
     borderWidth: 1.3,
     borderColor: "#4c1f1f",
     minWidth: 170,

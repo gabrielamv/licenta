@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, Image, Dimensions } from "react-native";
 
-const SplashScreen = ({ navigation }) => {
+const Splash = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.navigate("Home");
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplashScreen;
+export default Splash;

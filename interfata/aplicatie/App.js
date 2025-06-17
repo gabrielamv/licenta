@@ -4,7 +4,9 @@ import Galerie from './src/galerie';
 import Descopera from './src/descopera';
 import Preview from './src/preview';
 import Result from './src/result';
-import SplashScreen from './src/splashscreen';
+import Splash  from './src/splashscreen';
+import * as SplashScreen from 'expo-splash-screen';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts, PlayfairDisplay_700Bold, PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
@@ -12,18 +14,26 @@ import {Lora_700Bold } from '@expo-google-fonts/lora';
 import { CormorantGaramond_400Regular, CormorantGaramond_700Bold, CormorantGaramond_300Light_Italic, CormorantGaramond_400Regular_Italic, CormorantGaramond_500Medium_Italic, CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond';
 import {Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
 import {DancingScript_400Regular } from '@expo-google-fonts/dancing-script';
+import { Spectral_400Regular, Spectral_200ExtraLight, Spectral_300Light, Spectral_300Light_Italic } from '@expo-google-fonts/spectral';
+import * as Font from 'expo-font';
+
+import { Merriweather_400Regular, Merriweather_700Bold, Merriweather_300Light} from '@expo-google-fonts/merriweather';
+import {CrimsonText_400Regular, CrimsonText_700Bold} from '@expo-google-fonts/crimson-text';
 import AppLoading from 'expo-app-loading';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Asset } from "expo-asset";
 
 
 const Stack = createNativeStackNavigator();
+SplashScreen.preventAutoHideAsync();
 
 Asset.loadAsync([require("./assets/final_decupat.png")])
 
 export default function App() {
 
-  let [fontsLoaded] = useFonts({
+  const [customFontsLoaded, setCustomFontsLoaded] = useState(false);
+
+  let [expoFontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
     PlayfairDisplay_400Regular,
     Lora_700Bold,
@@ -36,21 +46,54 @@ export default function App() {
     Lato_400Regular,
     Lato_700Bold,
     DancingScript_400Regular,
+    Spectral_400Regular,
+    Spectral_200ExtraLight,
+    Spectral_300Light,
+    Merriweather_400Regular,
+    Merriweather_700Bold,
+    Merriweather_300Light,
+    CrimsonText_400Regular,
+    CrimsonText_700Bold,
+    Spectral_300Light_Italic,
   });
   
+  // useEffect(() => {
+  
+  //   const hideSplash = async () => {
+  //     if (fontsLoaded) {
+  //       // Delay 2 secunde înainte să ascundem splash-ul
+  //       await new Promise(resolve => setTimeout(resolve, 2000));
+  //       await SplashScreen.hideAsync();
+  //     }
+  //   };
+
+  //   hideSplash();
+  // }, [fontsLoaded]);
+
+    useEffect(() => {
+    async function loadCustomFonts() {
+      await Font.loadAsync({
+        'EBGaramond-Regular': require('./assets/fonturi/EB_Garamond/static/EBGaramond-Regular.ttf'),
+      });
+      setCustomFontsLoaded(true);
+    }
+
+    loadCustomFonts();
+  }, []);
+
+  // if (!fontsLoaded) return null;
   useEffect(() => {
     const hideSplash = async () => {
-      if (fontsLoaded) {
-        // Delay 2 secunde înainte să ascundem splash-ul
+      if (expoFontsLoaded && customFontsLoaded) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         await SplashScreen.hideAsync();
       }
     };
 
     hideSplash();
-  }, [fontsLoaded]);
+  }, [expoFontsLoaded, customFontsLoaded]);
 
-  if (!fontsLoaded) return null;
+  if (!expoFontsLoaded || !customFontsLoaded) return null;
 
   //return <CameraApp />;
   return (
@@ -61,7 +104,7 @@ export default function App() {
 
       <Stack.Screen
           name="SplashScreen"
-          component={SplashScreen}
+          component={Splash}
           options={{headerShown:false}}
       />
 

@@ -153,25 +153,9 @@ const Result = () => {
         uri: restoredImage,
         savedAt: Date.now(),
       }
-
-      // if(!alreadyExists){
-      //   const newEntry={
-      //     uri: restoredImage,
-      //     savedAt: Date.now(),
-      //   }
-    //     array.push(restoredImage);
-    //     await AsyncStorage.setItem("restaurari", JSON.stringify(array));
-    //     alert("Imagine salvată în galerie!");
-    //   } else {
-    //     alert("Această imagine este deja salvată.");
-    //   }
-    // } catch (e) {
-    //   console.log("Eroare la salvare:", e);
-    //   alert("A apărut o eraore la salvarea imaginii.");
     // }
       array.push(newEntry);
       await AsyncStorage.setItem("restaurari", JSON.stringify(array));
-      //alert("Imagine salvată în galerie!");
       setinfoMessage("Imagine salvată în galerie!");
     } catch (e) {
       console.log("Eroare la salvare:", e);
@@ -283,9 +267,9 @@ const styles = StyleSheet.create({
   },
 
   saveButtonText:{
-    fontSize: 18,
+    fontSize: 20,
     color: "#4c1f1f",
-    fontFamily: "Lato_400Regular",
+    fontFamily: "Spectral_300Light",
     fontWeight: "500",
   },
 

@@ -27,41 +27,28 @@ export default function Galerie({navigation}) {
     const handleBack = () => {
         navigation.goBack();
       };
-
+    const fetchImages = async () => {
+        const storedImages = await AsyncStorage.getItem("restaurari");
+        
+        let parsed = storedImages ? JSON.parse(storedImages) : [];
+        
+        parsed = parsed.filter((item) => typeof item === 'object')
+        .filter((item) => typeof item.uri === 'string')
+        .filter((val, idx, arr) => {return arr.findIndex(el => el.uri == val.uri) === idx;})
+        .sort((a, b) => {a.savedAt < b.savedAt ? 1 : -1})
+        setImages(parsed);
+    };
     useEffect(() => {
-        const fetchImages = async () => {
-            const storedImages = await AsyncStorage.getItem("restaurari");
-            
-            let parsed = storedImages ? JSON.parse(storedImages) : [];
-            
-            parsed = parsed.filter((item) => typeof item === 'object')
-            .filter((item) => typeof item.uri === 'string')
-            .filter((val, idx, arr) => {return arr.findIndex(el => el.uri == val.uri) === idx;})
-            .sort((a, b) => {a.savedAt < b.savedAt ? 1 : -1})
-            setImages(parsed);
-        };
         fetchImages();
     }, []);
 
-        useEffect(() => {
-            if (Platform.OS === 'android') {
-                UIManager.setLayoutAnimationEnabledExperimental &&
-                UIManager.setLayoutAnimationEnabledExperimental(true);
+    useEffect(() => {
+        if (Platform.OS === 'android') {
+            UIManager.setLayoutAnimationEnabledExperimental &&
+            UIManager.setLayoutAnimationEnabledExperimental(true);
         }
-      }, []);
+    }, []);
       
-
-    //const renderItem = ({ item, index }) => {
-        
-        //console.log(item)
-        //cod comentat la 14 iunie
-    //     return (
-    //     <TouchableOpacity
-    //         onPress = {() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true})}>
-    //         <Image source = {{ uri: item.uri}} style={styles.image}/>
-    //     </TouchableOpacity>
-    // )
-    //---------------------
 
     const renderItem = ({ item }) => {
         if (!item || !item.uri) return null;
@@ -96,7 +83,8 @@ export default function Galerie({navigation}) {
       
         const filtered = parsed.filter(item => item.uri !== uriToDelete);
         await AsyncStorage.setItem("restaurari", JSON.stringify(filtered));
-        setImages(filtered); // update state pentru a reflecta modificarea
+        // setImages(filtered); // update state pentru a reflecta modificarea
+        fetchImages();
       };
 
     //------------
