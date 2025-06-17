@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
-  View,
   Text,
   StyleSheet,
   Image,
@@ -9,45 +8,78 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Dimensions,
+  Animated,
+  View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const screenHeight = Dimensions.get("window").height;
 
 export default function DetaliiSimbol({ simbol, onClose }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (simbol) {
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [simbol]);
+
+  const handleClose = () => {
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
+
   return (
     <Modal
       visible={!!simbol}
       transparent
-      animationType="fade"
-      onRequestClose={onClose}
+      animationType="none"
+      onRequestClose={handleClose}
     >
-      <View style={styles.modalOverlay}>
-        <TouchableWithoutFeedback onPress={onClose}>
+      <Animated.View style={[styles.modalOverlay, { opacity }]}>
+        <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.modalBackdrop} />
         </TouchableWithoutFeedback>
 
         <View style={styles.modalContent}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={36} color="#4c1f1f" />
           </TouchableOpacity>
 
-          <ScrollView contentContainerStyle={styles.modalScrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             <Image source={{ uri: simbol?.uri }} style={styles.modalImage} />
             <Text style={styles.modalTitle}>{simbol?.nume}</Text>
 
             {simbol?.semnificatie && (
-              <Text style={styles.modalDescription}>Semnificație: {simbol.semnificatie}</Text>
+              <Text style={styles.modalDescription}>
+                Semnificație: {simbol.semnificatie}
+              </Text>
             )}
             {simbol?.descriere && (
-              <Text style={styles.modalDescription}>Descriere: {simbol.descriere}</Text>
+              <Text style={styles.modalDescription}>
+                Descriere: {simbol.descriere}
+              </Text>
             )}
             {simbol?.regiuni && (
-              <Text style={styles.modalDescription}>Regiuni: {simbol.regiuni}</Text>
+              <Text style={styles.modalDescription}>
+                Regiuni: {simbol.regiuni}
+              </Text>
             )}
           </ScrollView>
         </View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
