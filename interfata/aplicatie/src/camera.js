@@ -12,6 +12,8 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+
 import * as ImagePicker from "expo-image-picker";
 
 
@@ -22,6 +24,7 @@ export default function CameraApp() {
     MediaLibrary.usePermissions();
   const cameraRef = useRef(null);
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
 
   const handleBack = () => {
@@ -80,6 +83,7 @@ export default function CameraApp() {
 
   return (
     <View style={{ flex: 1 }}>
+  {isFocused && (
       <CameraView style={{ flex: 1 }} facing={cameraType} ref={cameraRef}>
         <TouchableOpacity onPress={takePicture} style={styles.cameraContentOut}>
           <View style={styles.cameraContentIn}>
@@ -92,6 +96,7 @@ export default function CameraApp() {
         </TouchableOpacity>
 
       </CameraView>
+      )}
 
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
         <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
