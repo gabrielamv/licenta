@@ -14,60 +14,54 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as MediaLibrary from "expo-media-library";
-import * as FileSystem from "expo-file-system";
-import * as ImageManipulator from 'expo-image-manipulator';
 //import DropDownPicker from 'react-native-dropdown-picker';
 import {WandSparkles } from "lucide-react-native";
+import Constants from 'expo-constants';
+import * as FileSystem from 'expo-file-system';
+import {X,  MagicWand, PaperPlaneTilt } from "phosphor-react-native";
+
 import Soare from "./soare";
-
-
-
 
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
-const aspectRatio = screenHeight / screenWidth;
-
 
 const Preview = ({ route }) => {
-  const { photoUri } = route.params;
+  const [photoUri, setPhotoUri] = useState(route.params.photoUri);
   const navigation = useNavigation();
-  const [selectedModel, setSelectedModel] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
+  const simboluri = route.params?.simboluri || [];
+  console.log(">>> SIMBOLURI PRIMITE ÎN PREVIEW:", simboluri);
 
-  //nou
-  const fadeAnim = useRef(new Animated.Value(0)).current; // Inițial, opacitate 
-  // Nou: Efect pentru a gestiona animația când showModelMenu se schimbă
+
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
     useEffect(() => {
       if (showModelMenu) {
-        // Animație de fade in când meniul apare
         Animated.timing(fadeAnim, {
-          toValue: 1, // Opacitate 1 (vizibil)
-          duration: 200, // Durata animației în milisecunde
-          useNativeDriver: true, // Folosește driverul nativ pentru performanță
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
         }).start();
       } else {
-        // Animație de fade out când meniul dispare
         Animated.timing(fadeAnim, {
-          toValue: 0, // Opacitate 0 (invizibil)
-          duration: 150, // O durată puțin mai scurtă pentru dispariție
+          toValue: 0,
+          duration: 150,
           useNativeDriver: true,
         }).start();
     }
-  }, [showModelMenu, fadeAnim]); // Rulează efectul când showModelMenu sau fadeAnim se schimbă
-
-
-
+  }, [showModelMenu, fadeAnim]);
 
 const aiModels = [
   {
     nume: 'Superrezoluție',
-    functie: '/ai/rezolutie'
+    functie: '/ai/superrezolutie/'
   }, 
   {
     nume: 'Restaurare poză',
-    functie: '/ai/restaurare'
+    functie: '/ai/restaurare/'
   }
 ];
 
@@ -75,24 +69,6 @@ const aiModels = [
   const handleBack = () => {
     navigation.goBack();
   };
-
-  const handleModelSelect = (modelId) => {
-    setSelectedModel(modelId);
-    setShowModelMenu(false); // închide meniul după alegere
-    console.log(`Model AI selectat: ${modelId}`);
-  };
-
-  const renderModelItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.modelItem,
-        selectedModel === item && styles.selectedModelItem,
-      ]}
-      onPress={() => handleModelSelect(item)}
-    >
-      <Text style={styles.modelText}>{item}</Text>
-    </TouchableOpacity>
-  );
 
   async function saveToGalery(uri) {
     const asset = await MediaLibrary.createAssetAsync(uri);
@@ -104,18 +80,42 @@ const aiModels = [
     }
   }
 
-  async function compress_image(uri) {
-    const compressedImage = await ImageManipulator.manipulateAsync(
-        uri,
-        [],
-        {
-            compress: 0.6, 
-            format: ImageManipulator.SaveFormat.JPEG,
-        }
-      );
-      console.log("Imagine comprimată:", compressedImage.uri);
-      return compressedImage.uri;
+  async function processImage(cale_server){
+    setShowModelMenu(false);
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", {
+        uri: photoUri,
+        name: "photo.jpg",
+        type: "image/jpeg",
+      });
+      const response = await fetch(Constants.expoConfig.SERVER_URL + `${cale_server}`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Eroare la server");
+      const result = await response.json();
+
+      if (!result.imagine) throw new Error("Imagine lipsă din răspuns");
+
+      const timestamp = Date.now();
+      const newFileUri = FileSystem.cacheDirectory + `processed_${timestamp}.jpg`;
+      await FileSystem.writeAsStringAsync(newFileUri, result.imagine, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      setPhotoUri(newFileUri);
+      setIsLoading(false);
+
+    } catch (error) {
+      console.error("Eroare la procesarea imaginii:", error);
+      Alert.alert("Eroare", "A apărut o problemă la procesarea imaginii.");
+      setIsLoading(false);
+      return;
     }
+  }
   
   async function sendImage() {
     console.log("Butonul a fost apăsat");
@@ -130,25 +130,20 @@ const aiModels = [
     }
 
     try {
-      console.log("Comprimam imaginea")
-      const compressedImage = await compress_image(photoUri);
       console.log("Începem salvarea în MediaLibrary...");
-      await saveToGalery(compressedImage);
+      await saveToGalery(photoUri);
       console.log("Imagine salvată în galerie");
 
       const form = new FormData();
       form.append("image", {
-        uri: compressedImage,
+        uri: photoUri,
         name: "photo.jpg",
         type: "image/jpeg",
       });
-      form.append("selectedModel", selectedModel);
 
-      console.log("FormData pregătit pentru upload");
       console.log("Trimit request spre server...");
       setIsLoading(true);
-      const response = await fetch("http://192.168.0.100/upload/", {
-        //const response = await fetch("http://172.18.160.1/upload/", {
+      const response = await fetch(Constants.expoConfig.SERVER_URL + "/upload/", {
           method: "POST",
         body: form,
       });
@@ -168,10 +163,8 @@ const aiModels = [
         console.log("Serverul a trimis o eroare:", result.eroare);
         Alert.alert("Eroare server", result.eroare);
       } else {
-        console.log("Navighez către Result cu imaginea restaurată");
-
         setIsLoading(false);
-        navigation.navigate("Result", { restoredImage: compressedImage });
+        navigation.navigate("Result", { restoredImage: photoUri, models: result.models, simboluri});
       }
     } catch (error) {
       console.error("Eroare în sendImage:", error);
@@ -185,15 +178,14 @@ const aiModels = [
       <StatusBar hidden={true} />
 
       <TouchableOpacity onPress={handleBack} style={styles.cancelButton}>
-        <Ionicons name="close" size={30} color="#4c1f1f" />
+        <X size={26} color="#4c1f1f" weight="light" />
       </TouchableOpacity>
 
       <Text style={styles.text}>Preview:</Text>
-      <Image source={{ uri: photoUri }} style={styles.image} />
+      <Image source={{ uri: photoUri }} style={styles.image} key={photoUri} />
 
       {isLoading && (
         <View style={styles.loadingOverlay}>
-        {/* <ActivityIndicator size="large" color="#00BFFF" /> */}
             <Soare/>
             <Text style={styles.loadingText}>Se procesează imaginea...</Text>
         </View>
@@ -206,7 +198,9 @@ const aiModels = [
           pressed && { backgroundColor: "#e6c7aa" }
         ]}
         >
-        <Ionicons name="send" size={22} color="#4c1f1f"/>
+
+        <PaperPlaneTilt size={26} color="#4c1f1f" weight="light" />
+
         <Text style={styles.sendButtonText}>Trimite</Text>
       </Pressable>
 
@@ -215,8 +209,9 @@ const aiModels = [
           onPress={() => setShowModelMenu(!showModelMenu)} 
           style={styles.sparkleButton}         
         >
-          <WandSparkles size={24} color="#4c1f1f" style={{ marginLeft: 8 }} />
-          <Text style = {styles.sparkleButtonText}>Model Ai</Text>
+
+          <MagicWand size={26} color="#4c1f1f" weight="light" style={{ marginLeft: -4 }} />
+          <Text style = {styles.sparkleButtonText}>Ajustează poza</Text>
         </TouchableOpacity> 
 
 
@@ -225,14 +220,9 @@ const aiModels = [
             {aiModels.map((model, index) => (
             <TouchableOpacity
               key={model.nume}
-              onPress={() => {
-              setSelectedModel(model);//TODO in loc de asta
-              //facem fetch catre model.functie cu poza, pornim ecranul de loading (soarele)
-              setShowModelMenu(false); // închide meniul după alegere
-              }}
+              onPress={() => processImage(model.functie)}
             style={[
             styles.modelItem,
-            selectedModel === model && styles.selectedModelItem,
             index < aiModels.length - 1 && styles.modelItemBorderBottom, // adaugă bordură doar dacă nu este ultimul element
         ]}
         >
@@ -300,11 +290,6 @@ const styles = StyleSheet.create({
   modelItemBorderBottom: { // NOU STIL
     borderBottomWidth: 1.3,
     borderColor: "#4c1f1f", // Culoarea bordurii subtile
-  },
-
-  selectedModelItem: {
-    backgroundColor: "#e6c7aa", // culoare pentru modelul selectat
-    borderWidth: 1.3,
   },
 
   modelText: {

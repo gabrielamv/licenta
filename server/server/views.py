@@ -2,8 +2,11 @@ import base64
 from django.http import HttpResponse
 from django.core.handlers.wsgi import WSGIRequest
 from django.views.decorators.csrf import csrf_exempt
-from .models import UploadedImage, Simbol
 from django.http import JsonResponse
+
+from .models import Simbol
+from .upscale.upscale import upscale_fsrcnn
+from .detectare_simboluri.detectare import detectare
 
 def index(request: WSGIRequest):
     return HttpResponse("""                                      
@@ -20,18 +23,13 @@ def index(request: WSGIRequest):
 
 
 @csrf_exempt
-def upload_image(request: WSGIRequest):
+def detectare_simboluri(request: WSGIRequest):
     if request.method == 'POST':
-        print (request.FILES)
-        print(request.POST.get('selectedModel'))
         image = request.FILES.get('image')
         if image:
-            img = UploadedImage(image=image) #creezi obiectul din models pentru salvare in db
-            img.save() #salvezi in db
-            b64img = base64.b64encode(image.read()).decode('utf-8')
-
-            print("trimitem mesaj")
-            return JsonResponse({'mesaj':'Operatia s-a finlizat cu succes!', 'imagine':b64img})#aici sa iti dea raspuns json
+            #aplicam detectare simboluri
+            models = detectare(image)
+            return JsonResponse({'models':models})
         return JsonResponse({'eroare':'EROARE!'})
     
 def simboluri(request):
@@ -43,7 +41,28 @@ def simboluri(request):
             'descriere': simbol.descriere,
             'regiuni': simbol.regiuni,
             'id_imagine': simbol.id_imagine,
-            #'id_imagine': simbol.id_imagine,
-            #'id_imagine': simbol.id_imagine.name.split('/')[-1],
         })
     return JsonResponse({'simboluri': d})
+
+
+@csrf_exempt
+def superrezolutie(request: WSGIRequest):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        if image:
+            #aplicam superrezolutie
+            image = upscale_fsrcnn(image.read())
+            b64img = base64.b64encode(image).decode('utf-8')
+            return JsonResponse({'imagine':b64img})
+        return JsonResponse({'eroare':'EROARE!'})
+    
+@csrf_exempt
+def restaurare(request: WSGIRequest):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        if image:
+            #aplicam restaurare
+            image = upscale_fsrcnn(image.read()) #TODO restaurare, nu upscale_fsrcnn
+            b64img = base64.b64encode(image).decode('utf-8')
+            return JsonResponse({'imagine':b64img})
+        return JsonResponse({'eroare':'EROARE!'})

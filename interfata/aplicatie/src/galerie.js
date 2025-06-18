@@ -14,6 +14,9 @@ UIManager,
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { ArrowBendUpLeft, X, DownloadSimple, Trash } from "phosphor-react-native";
+import Constants from 'expo-constants';
+
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -55,7 +58,7 @@ export default function Galerie({navigation}) {
 
     return (   
     <View style={{ position: "relative" }}>
-        <TouchableOpacity onPress={() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true })}>
+        <TouchableOpacity onPress={() => navigation.navigate("Result", { restoredImage: item.uri, fromGallery: true, models: item.models, simboluri })}>
             <Image source={{ uri: item.uri }} style={styles.image} />
         </TouchableOpacity>
 
@@ -69,7 +72,9 @@ export default function Galerie({navigation}) {
             borderRadius: 20,
         }}
         >
-        <Ionicons name="trash" size={30} color="#8B1E3F" />
+        {/* <Ionicons name="trash" size={30} color="#8B1E3F" /> */}
+        <Trash size={30} color="#8B1E3F" weight="bold" />
+
         </TouchableOpacity>
     </View>
     )
@@ -109,10 +114,12 @@ export default function Galerie({navigation}) {
             />
 
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={30} color="#5a2a2a" />
+                <ArrowBendUpLeft size={30} color="#4c1f1f" weight="light" />
             </TouchableOpacity>
         </View>
     );
+
+    
 }
 
 const styles = StyleSheet.create({

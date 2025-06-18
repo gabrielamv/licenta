@@ -1,9 +1,5 @@
 from django.db import models
 
-class UploadedImage(models.Model):
-    image = models.ImageField(upload_to='uploads/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
 class Simbol(models.Model):
     nume = models.CharField(max_length=100)
     semnificatie = models.TextField(default="")

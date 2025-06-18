@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from 'expo-constants';
+import { Camera, Images, MagnifyingGlass } from "phosphor-react-native";
+
 //import { useNavigation } from "@react-navigation/native";
 
 
@@ -28,8 +31,7 @@ export default function Home({navigation}) {
   useEffect(() => {
     const fetchSimboluri = async () => {
       try {
-        //const response = await fetch('http://172.18.160.1:80/simboluri');
-        const response = await fetch('http://192.168.0.100:80/simboluri');
+        const response = await fetch(Constants.expoConfig.SERVER_URL + '/simboluri');
         const data = await response.json();
         setSimboluri(data);
       } catch (error) {
@@ -152,15 +154,15 @@ export default function Home({navigation}) {
 
       {/* Butoane */}
       <View style={styles.buttonContainer}>
-        <CustomButton icon="camera-outline" text="Scanează" onPress = { () => navigation.navigate("Camera", {simboluri})} />
-        <CustomButton icon="images-outline" text="Vezi restaurările tale" onPress = { () => navigation.navigate("Galerie")} />
-        <CustomButton icon="search" text="Descoperă simbolurile" onPress = { () => navigation.navigate("Descopera", {simboluri})} /> 
+        <CustomButton IconComponent={Camera} text="Scanează" onPress={() => navigation.navigate("Camera", { simboluri })} />
+        <CustomButton IconComponent={Images} text="Vezi restaurările tale" onPress={() => navigation.navigate("Galerie")} />
+        <CustomButton IconComponent={MagnifyingGlass} text="Descoperă simbolurile" onPress={() => navigation.navigate("Descopera", { simboluri })} />
       </View>
     </View>
   );
 }
 
-function CustomButton({ icon, text, onPress }) {
+function CustomButton({ IconComponent, text, onPress }) {
   return (
     <Pressable 
     onPress = {onPress}
@@ -168,7 +170,7 @@ function CustomButton({ icon, text, onPress }) {
       styles.button,
       pressed && { backgroundColor: "#e6c7aa" }
     ]}>
-      <Ionicons name={icon} size={28} color="#5a2a2a" style={{ marginRight: 8 }} />
+      <IconComponent  size={30} color="#4c1f1f" weight="light" style={{ marginRight: 8 }} />
       <Text style={styles.buttonText}>{text}</Text>
     </Pressable>
   );

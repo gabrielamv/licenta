@@ -20,12 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 
-#from .views import *
-
 urlpatterns = [
     #path('', include('index.urls')),
     path('admin/', admin.site.urls),
-    path('upload/', views.upload_image),
+    path('upload/', views.detectare_simboluri),
+    path('ai/superrezolutie/', views.superrezolutie),
+    path('ai/restaurare/', views.restaurare),
      path('simboluri/', views.simboluri),
      path('', views.index)
 ]

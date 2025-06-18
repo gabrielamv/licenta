@@ -17,6 +17,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import DetaliiSimbol from "./detalii_simbol";
+import { ArrowBendUpLeft, X, DownloadSimple } from "phosphor-react-native";
 
 
 
@@ -79,7 +80,8 @@ export default function Descopera ({route}) {
   <View style={styles.separator} />
 
   <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-    <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
+    {/* <Ionicons name="arrow-back" size={30} color="#4c1f1f" /> */}
+    <ArrowBendUpLeft size={30} color="#4c1f1f" weight="light" />
   </TouchableOpacity>
 
   <FlatList

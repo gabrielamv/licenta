@@ -10,9 +10,14 @@ import {
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
+import { ArrowBendUpLeft, Image as ImageIcon } from "phosphor-react-native";
+
+
+
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -26,10 +31,33 @@ export default function CameraApp() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
+  const [simboluri, setSimboluri] = useState([]);
+
+useEffect(() => {
+  fetch("http://192.168.0.100:80/simboluri/")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(">>> Am primit simboluri în Camera.js:", data.simboluri);
+      setSimboluri(data.simboluri || []);
+    })
+    .catch((err) => {
+      console.error("Eroare la fetch simboluri:", err);
+    });
+}, []);
+
+
 
   const handleBack = () => {
     navigation.goBack();
   };
+  
+  async function compress_image(uri) {
+    const compressed = await ImageManipulator.manipulateAsync(uri, [], {
+      compress: 0.6,
+      format: ImageManipulator.SaveFormat.JPEG,
+    });
+    return compressed.uri;
+  }
 
   async function requestPermissions() {
     console.log("cerem permisiuni");
@@ -64,7 +92,8 @@ export default function CameraApp() {
   async function takePicture() {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
-      navigation.navigate("Preview", { photoUri: photo.uri });
+      const compressUri = await compress_image(photo.uri);
+      navigation.navigate("Preview", { photoUri: compressUri, simboluri:simboluri });
     }
   }
 
@@ -76,7 +105,8 @@ export default function CameraApp() {
     });
   
     if (!result.canceled && result.assets.length > 0) {
-      navigation.navigate("Preview", { photoUri: result.assets[0].uri });
+      const compressUri = await compress_image(result.assets[0].uri);
+      navigation.navigate("Preview", { photoUri: compressUri, simboluri: simboluri });
     }
   }
   
@@ -92,14 +122,14 @@ export default function CameraApp() {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={pickImageFromGallery} style={styles.galleryButton}>
-          <Ionicons name="image-outline" size={28} color="#4c1f1f" />
+          <ImageIcon size={28} color="#4c1f1f" weight="light" />
         </TouchableOpacity>
 
       </CameraView>
       )}
 
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={30} color="#4c1f1f" />
+        <ArrowBendUpLeft size={30} color="#4c1f1f" weight="light" />
       </TouchableOpacity>
     </View>
   );

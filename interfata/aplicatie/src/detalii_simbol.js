@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { ArrowBendUpLeft, X, DownloadSimple } from "phosphor-react-native";
 
 const screenHeight = Dimensions.get("window").height;
 
@@ -52,7 +53,8 @@ export default function DetaliiSimbol({ simbol, onClose }) {
 
         <View style={styles.modalContent}>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <Ionicons name="close" size={36} color="#4c1f1f" />
+            {/* <Ionicons name="close" size={36} color="#4c1f1f" /> */}
+            <X size={36} color="#4c1f1f" weight="light" />
           </TouchableOpacity>
 
           <ScrollView
