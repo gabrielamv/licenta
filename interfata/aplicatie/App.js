@@ -5,7 +5,6 @@ import Descopera from './src/descopera';
 import Preview from './src/preview';
 import Result from './src/result';
 import Splash  from './src/splashscreen';
-import * as SplashScreen from 'expo-splash-screen';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -25,7 +24,6 @@ import { Asset } from "expo-asset";
 
 
 const Stack = createNativeStackNavigator();
-SplashScreen.preventAutoHideAsync();
 
 Asset.loadAsync([require("./assets/final_decupat.png")])
 
@@ -57,18 +55,6 @@ export default function App() {
     Spectral_300Light_Italic,
   });
   
-  // useEffect(() => {
-  
-  //   const hideSplash = async () => {
-  //     if (fontsLoaded) {
-  //       // Delay 2 secunde înainte să ascundem splash-ul
-  //       await new Promise(resolve => setTimeout(resolve, 2000));
-  //       await SplashScreen.hideAsync();
-  //     }
-  //   };
-
-  //   hideSplash();
-  // }, [fontsLoaded]);
 
     useEffect(() => {
     async function loadCustomFonts() {
@@ -80,18 +66,6 @@ export default function App() {
 
     loadCustomFonts();
   }, []);
-
-  // if (!fontsLoaded) return null;
-  useEffect(() => {
-    const hideSplash = async () => {
-      if (expoFontsLoaded && customFontsLoaded) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        await SplashScreen.hideAsync();
-      }
-    };
-
-    hideSplash();
-  }, [expoFontsLoaded, customFontsLoaded]);
 
   if (!expoFontsLoaded || !customFontsLoaded) return null;
 

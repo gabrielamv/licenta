@@ -70,15 +70,6 @@ const aiModels = [
     navigation.goBack();
   };
 
-  async function saveToGalery(uri) {
-    const asset = await MediaLibrary.createAssetAsync(uri);
-    const album = await MediaLibrary.getAlbumAsync("Povești Brodate");
-    if (album) {
-      await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-    } else {
-      await MediaLibrary.createAlbumAsync("Povești Brodate", asset, false);
-    }
-  }
 
   async function processImage(cale_server){
     setShowModelMenu(false);
@@ -130,10 +121,6 @@ const aiModels = [
     }
 
     try {
-      console.log("Începem salvarea în MediaLibrary...");
-      await saveToGalery(photoUri);
-      console.log("Imagine salvată în galerie");
-
       const form = new FormData();
       form.append("image", {
         uri: photoUri,

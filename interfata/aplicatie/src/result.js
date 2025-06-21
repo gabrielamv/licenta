@@ -10,6 +10,7 @@ import {
   Animated as RNAnimated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as MediaLibrary from "expo-media-library";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Animated, {
   useAnimatedGestureHandler,
@@ -27,6 +28,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ImageDown } from "lucide-react-native";
 import { ArrowBendUpLeft, X, DownloadSimple } from "phosphor-react-native";
 import DetaliiSimbol from "./detalii_simbol"; 
+import Constants from "expo-constants";
+import { useMemo } from "react";
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -36,7 +39,6 @@ const Result = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { restoredImage, fromGallery, models, simboluri } = route.params;
-  console.log("SIMBOLURI", simboluri);
 
   const [infoMessage, setinfoMessage] = useState(null);
   const fadeAnim = useRef(new RNAnimated.Value(0)).current;
@@ -50,7 +52,7 @@ const [imageSize, setImageSize] = useState({ width: 1, height: 1 });
 
 const simboluriCuUri = (simboluri || []).map(s => ({
   ...s,
-  uri: `http://192.168.0.100:80/static/motive/${s.id_imagine}`,
+  uri: Constants.expoConfig.SERVER_URL+`/static/motive/${s.id_imagine}`,
 }))
 
   useEffect(() => {
@@ -89,6 +91,23 @@ const simboluriCuUri = (simboluri || []).map(s => ({
   useEffect(() => {
     Image.getSize(restoredImage, (w, h) => setImageSize({ width: w, height: h }));
   }, [restoredImage]);
+
+  const displayedImage = useMemo(() => {
+    const imgAspect = imageSize.height / imageSize.width;
+    const screenAspect = SCREEN_HEIGHT / SCREEN_WIDTH;
+  
+    if (imgAspect > screenAspect) {
+      // imaginea se potrivește pe înălțime
+      const height = SCREEN_HEIGHT;
+      const width = (imageSize.width / imageSize.height) * SCREEN_HEIGHT;
+      return { width, height, offsetX: (SCREEN_WIDTH - width) / 2, offsetY: 0 };
+    } else {
+      // imaginea se potrivește pe lățime
+      const width = SCREEN_WIDTH;
+      const height = (imageSize.height / imageSize.width) * SCREEN_WIDTH;
+      return { width, height, offsetX: 0, offsetY: (SCREEN_HEIGHT - height) / 2 };
+    }
+  }, [imageSize]);
 
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -162,6 +181,20 @@ const simboluriCuUri = (simboluri || []).map(s => ({
 
       array.push(newEntry);
       await AsyncStorage.setItem("restaurari", JSON.stringify(array));
+
+      
+      console.log("Începem salvarea în MediaLibrary...");
+
+      const asset = await MediaLibrary.createAssetAsync(restoredImage);
+      const album = await MediaLibrary.getAlbumAsync("Povești Brodate");
+      if (album) {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      } else {
+        await MediaLibrary.createAlbumAsync("Povești Brodate", asset, false);
+      }
+
+      console.log("Imagine salvată în galerie");
+
       setinfoMessage("Imagine salvată în galerie!");
     } catch (e) {
       console.log("Eroare la salvare:", e);
@@ -171,12 +204,11 @@ const simboluriCuUri = (simboluri || []).map(s => ({
 
   console.log(models)
 
-  const baseScale = SCREEN_WIDTH / imageSize.width;   // imaginea e „contain” pe lățime
   const dotData = (models || []).map((m) => ({
-...m,
-  px: m.x * baseScale,   // coordonate în pixeli pe ecran
-  py: m.y * baseScale,
-}));
+    ...m,
+    px: displayedImage.offsetX + m.x * (displayedImage.width / imageSize.width),
+    py: displayedImage.offsetY + m.y * (displayedImage.height / imageSize.height),
+  }));
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -190,87 +222,23 @@ const simboluriCuUri = (simboluri || []).map(s => ({
 
       <GestureHandlerRootView style={{ flex: 1 }}>
 
-
-      {/* //////prima varianta comentata----- */}
-
-
-        {/* <PanGestureHandler onGestureEvent={panHandler}>
-          <Animated.View style={{ flex: 1 }}>
-            <PinchGestureHandler onGestureEvent={pinchHandler}>
-              <Animated.Image
-                source={{ uri: restoredImage }}
-                style={[styles.image, animatedStyle]}
-                resizeMode="contain"
-              />
-
-             
-
-              {dotData.map((dot, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => setSelectedSymbol(dot)}
-                  style={[
-                  styles.dot,
-                  { left: dot.px - 8, top: dot.py - 8 }, // -8 pt. a centra cercul (16 px diametru)
-                  ]}
-                />
-              ))}
-
-
-            </PinchGestureHandler>
-          </Animated.View>
-        </PanGestureHandler> */}
-
-
-        {/* /////----------------a doua varianta comentata----- */}
-
-
-{/* 
         <PanGestureHandler onGestureEvent={panHandler}>
-          <Animated.View style={{ flex: 1 }}>
-            <PinchGestureHandler onGestureEvent={pinchHandler}>
-              <Animated.View style={{ flex: 1 }}>
-                <Animated.Image
-                  source={{ uri: restoredImage }}
-                  style={[styles.image, animatedStyle]}
-                  resizeMode="contain"
-                />
-                {dotData.map((dot, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    // onPress={() => setSelectedSymbol(dot)}
-
-                    onPress={() => {
-                      // const simbolComplet = simboluri.find(s => s.nume === dot.label);
-                      const simbolComplet = simboluriCuUri.find(s => s.nume.toLowerCase().trim() === dot.label.toLowerCase().trim());
-
-                      setSelectedSymbol(simbolComplet);
-                    }}
-
-                    style={[
-                      styles.dot,
-                      { left: dot.px - 8, top: dot.py - 8 },
-                    ]}
+            <Animated.View style={{ flex: 1 }}>
+              <PinchGestureHandler onGestureEvent={pinchHandler}>
+                  <Animated.Image
+                    source={{ uri: restoredImage }}
+                    style={[styles.image, animatedStyle]}
+                    resizeMode="contain"
                   />
-                ))}
-              </Animated.View>
-            </PinchGestureHandler>
-          </Animated.View>
-        </PanGestureHandler> */}
-
-
-            <PinchGestureHandler onGestureEvent={pinchHandler}>
-              <Animated.View style={{ flex: 1 }}>
-                <Animated.Image
-                  source={{ uri: restoredImage }}
-                  style={[styles.image, animatedStyle]}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </PinchGestureHandler>
+              </PinchGestureHandler>
+            </Animated.View>
+          </PanGestureHandler>
 
             {/* Bulinele separat, peste imagine */}
-            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            <Animated.View
+              style={[StyleSheet.absoluteFill, animatedStyle]}
+              pointerEvents="box-none"
+            >
               {dotData.map((dot, idx) => (
                 <TouchableOpacity
                   key={idx}
@@ -286,11 +254,6 @@ const simboluriCuUri = (simboluri || []).map(s => ({
                       // s.nume.toLowerCase().trim() === dot.label.toLowerCase().trim()
                       normalizare(s.nume) === normalizare(dot.label)
                     );
-
-                    console.log("CLICK BULINA:", dot.label, simbolComplet);
-                    console.log("CLICK BULINA:", dot.label);
-                    console.log("CĂUTARE ÎN simboluriCuUri:", simboluriCuUri.map(s => s.nume));
-
                     setSelectedSymbol(simbolComplet);
                   }}
                   style={[
@@ -302,7 +265,7 @@ const simboluriCuUri = (simboluri || []).map(s => ({
                   ]}
                 />
               ))}
-            </View>
+            </Animated.View>
 
       </GestureHandlerRootView>
 
@@ -335,30 +298,7 @@ const simboluriCuUri = (simboluri || []).map(s => ({
           </View>
         </RNAnimated.View>
       )}
-
-
-      {/* {selectedSymbol && (
-        <View style={styles.popupOverlay}>
-          <View style={styles.popupBox}>
-            <Text style={styles.popupTitle}>{selectedSymbol.label}</Text>
-            <Text style={styles.popupCoords}>
-              X: {selectedSymbol.x.toFixed(1)}   Y: {selectedSymbol.y.toFixed(1)}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.popupClose}
-              onPress={() => setSelectedSymbol(null)}
-            >
-            <Text style={{ color: "#4c1f1f", fontWeight: "bold" }}>Închide</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )} */}
-
       <DetaliiSimbol simbol={selectedSymbol} onClose={() => setSelectedSymbol(null)} />
-
-
-
     </View>
   );
 };
@@ -435,8 +375,8 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: "#d60000",  // roșu vizibil
-    borderWidth: 2,
+    backgroundColor: "#e6394688",
+    borderWidth: 1,
     borderColor: "#fff",
     zIndex: 50,
   },

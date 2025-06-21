@@ -15,9 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { ArrowBendUpLeft, Image as ImageIcon } from "phosphor-react-native";
-
-
-
+import Constants from 'expo-constants'
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -34,7 +32,7 @@ export default function CameraApp() {
   const [simboluri, setSimboluri] = useState([]);
 
 useEffect(() => {
-  fetch("http://192.168.0.100:80/simboluri/")
+  fetch(Constants.expoConfig.SERVER_URL + "/simboluri/")
     .then((res) => res.json())
     .then((data) => {
       console.log(">>> Am primit simboluri în Camera.js:", data.simboluri);

@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import DetaliiSimbol from "./detalii_simbol";
 import { ArrowBendUpLeft, X, DownloadSimple } from "phosphor-react-native";
+import Constants from "expo-constants";
 
 
 
@@ -33,7 +34,7 @@ export default function Descopera ({route}) {
     
     const simboluriCuUri = simboluri.map(simbol => ({
         ...simbol,
-        uri: `http://192.168.0.100:80/static/motive/${simbol.id_imagine}`
+        uri: Constants.expoConfig.SERVER_URL+`/static/motive/${simbol.id_imagine}`
       }));
     
 

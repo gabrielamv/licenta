@@ -170,7 +170,7 @@ function CustomButton({ IconComponent, text, onPress }) {
       styles.button,
       pressed && { backgroundColor: "#e6c7aa" }
     ]}>
-      <IconComponent  size={30} color="#4c1f1f" weight="light" style={{ marginRight: 8 }} />
+      <IconComponent  size={30} color="#4c1f1f" style={{ marginRight: 8 }} />
       <Text style={styles.buttonText}>{text}</Text>
     </Pressable>
   );

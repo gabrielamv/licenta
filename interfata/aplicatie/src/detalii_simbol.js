@@ -20,7 +20,12 @@ export default function DetaliiSimbol({ simbol, onClose }) {
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    
+  console.log("SIMBOL MODAL:", simbol);
     if (simbol) {
+      if (simbol?.uri) {
+        Image.prefetch(simbol.uri).catch(err => console.log("Image preload error:", err));
+      }
       Animated.timing(opacity, {
         toValue: 1,
         duration: 200,

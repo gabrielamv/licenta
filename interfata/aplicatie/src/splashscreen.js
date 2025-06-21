@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import { View, StyleSheet, Image, Dimensions } from "react-native";
 
 const Splash = ({ navigation }) => {
+  console.log("am intrat pe splash")
   useEffect(() => {
     const timer = setTimeout(() => {
+      console.log("ma duc acasa")
       navigation.navigate("Home");
     }, 1000);
     return () => clearTimeout(timer);

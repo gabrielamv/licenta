@@ -7,19 +7,10 @@ from django.http import JsonResponse
 from .models import Simbol
 from .upscale.upscale import upscale_fsrcnn
 from .detectare_simboluri.detectare import detectare
+from .deoldify.colorize import colorize_image
 
 def index(request: WSGIRequest):
-    return HttpResponse("""                                      
-        <html>
-            <body>
-                <form action="/upload/" method="POST" enctype="multipart/form-data">
-                    <label for="image"> Choose an image to upload: </label>
-                    <input type="file" id="image" name="image" accept="image/*" required>
-                    <input type="submit" value="Upload Image">
-                </form>
-            </body>
-        </html>
-    """)
+    return HttpResponse("")
 
 
 @csrf_exempt
@@ -62,7 +53,7 @@ def restaurare(request: WSGIRequest):
         image = request.FILES.get('image')
         if image:
             #aplicam restaurare
-            image = upscale_fsrcnn(image.read()) #TODO restaurare, nu upscale_fsrcnn
+            image = colorize_image(image)
             b64img = base64.b64encode(image).decode('utf-8')
             return JsonResponse({'imagine':b64img})
         return JsonResponse({'eroare':'EROARE!'})

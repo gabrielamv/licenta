@@ -27,6 +27,22 @@ const aspectRatio = screenHeight / screenWidth;
 export default function Galerie({navigation}) {
     const [images, setImages] = useState([]);
     //const navigation = useNavigation();
+
+
+    const [simboluri, setSimboluri] = useState([]);
+
+        useEffect(() => {
+            fetch(Constants.expoConfig.SERVER_URL + "/simboluri/")
+                .then((res) => res.json())
+                .then((data) => {
+                console.log(">>> SIMBOLURI ÎN GALERIE:", data.simboluri);
+                setSimboluri(data.simboluri || []);
+                })
+                .catch((err) => {
+                console.error("Eroare la fetch simboluri (Galerie):", err);
+                });
+            }, []);
+
     const handleBack = () => {
         navigation.goBack();
       };
